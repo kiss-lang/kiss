@@ -1,0 +1,319 @@
+// (defvar) declares static variables
+(defvar message "Howdy")
+
+// #| ... |# parses and injects raw Haxe code
+(defvar mathResult #|5 + 6 * 3|#) // Order of operations will apply
+
+// (defun) declares static functions
+(defun myFloor [num] 
+    // funcalls can use dot access
+    (Math.floor num))
+
+// functions are resolved in the macro context
+(defvar funResult (myFloor 7.5))
+
+// (defprop) declares instance variables
+(defprop myField 5)
+
+// (defmethod) declares instance methods
+(defmethod myMethod [] this.myField)
+
+// [...] returns a Kiss array (they have special features and convert implicitly)
+(defvar myArray [1 2 3])
+
+// Array access is via nth
+(defvar myArrayLast (nth myArray -1))
+
+// Variadic math uses haxe's Lambda.fold under the hood
+(defvar mySum (+ 1 2 3))
+
+(defvar myDifference (- 5 4 3))
+
+(defun _testMultiplication [] 
+    (Assert.equals 60 (* 2 5 6))
+    (Assert.equals 5522401584 (* 84 289 89 71 36))
+    (Assert.equals "heyheyhey" (* "hey" 3)))
+
+// All math operations return floats, none truncate by default
+(defvar myQuotient (/ 6 3 2 2))
+
+(defvar myRemainder (% 10 6))
+
+(defvar myPower (^ 2 8))
+
+(defvar &mut myNum 6)
+(defvar myInc ++myNum)
+
+(defvar myMin (min 9 3 7 1))
+(defvar myMax (max 9 3 7 1))
+
+(defun _testLessThan []
+    (Assert.isTrue (< 1 2 3 4))
+    (Assert.isFalse (< 1 1 3 4))
+    (Assert.isFalse (< 1 12 12)))
+    
+(defun _testLesserEqual []
+    (Assert.isTrue (<= 1 2 3 4))
+    (Assert.isTrue (<= 1 1 3 4))
+    (Assert.isFalse (<= 1 12 11)))
+
+(defun _testGreaterThan []
+    (Assert.isTrue (> 4 3 2 1))
+    (Assert.isFalse (> 4 4 2 1))
+    (Assert.isFalse (> 9 3 3)))
+
+(defun _testGreaterEqual []
+    (Assert.isTrue (>= 4 3 2 1))
+    (Assert.isTrue (>= 4 4 2 1))
+    (Assert.isFalse (>= 9 4 5)))
+
+(defun _testEqual []
+    (Assert.isTrue (= 1 1 1 1))
+    (Assert.isFalse (= 1 2 1 1))
+    (Assert.isTrue (= "hey" "hey" "hey"))
+    (Assert.isFalse (= "hey" "you" "hey"))
+    (Assert.isTrue (= true true true))
+    (Assert.isFalse (= true false true))
+    (Assert.isTrue (= false false false)))
+
+(defun _testIf []
+    (Assert.equals true (if 1 true false))
+    (Assert.equals false (if 0 true false))
+    (Assert.equals false (if -1 true false))
+    (Assert.equals false (if null true false))
+    (Assert.equals true (if true true false))
+    (Assert.equals false (if false true false))
+    (Assert.equals true (if "string" true false))
+    (Assert.equals false (if "" true false))
+    (Assert.equals false (if [] true false))
+    (Assert.equals true (if [1] true false))
+    (Assert.equals 5 (if true 5))
+    (Assert.equals null (if false 5)))
+
+(defvar :Int myInt 8)
+
+(defmacrofun doTwiceInt [intOp]
+    ,intOp
+    ,intOp)
+
+// I think this causes doTwiceInt's runtime function to be typed as requiring Quote<Int> and returning Int
+(defun :Int incrementTwice [:Int val]
+    (doTwiceInt ++val))
+
+(defmacrofun doTwiceString [stringOp]
+    ,stringOp
+    ,stringOp)
+
+(defun myTryCatch [:Any e]
+    (try
+        (throw e)
+        (catch [:String error] 5)
+        (catch [:Int error] 6)
+        (catch [error] 7)))
+
+(defun myTypeCheck []
+    (the Int 5))
+
+(defun myGroups1 []
+    (Prelude.groups [1 2 3 4] 2))
+
+(defun myGroups2 []
+    (Prelude.groups [1 2 3 4] 3 true))
+
+(defun _testLet []
+    (let [a 5
+            b 6
+            :String c "stuff"]
+        (Assert.equals 5 a)
+        (Assert.equals 6 b)
+        (Assert.equals "stuff" c))
+    (let [&mut a "str1"]
+        (Assert.equals "str1" a)
+        (set a "str2")
+        (Assert.equals "str2" a)))
+
+(defvar myConstructedString (new String "sup"))
+
+(defvar myCond1 (cond 
+    ((= 5 6) "not this")
+    ((= 8 9) "not this either")
+    ((= 1 1) "this one")
+    (true "not the default")))
+
+(defvar myCond2 (cond 
+    ((= 5 6) "not this")
+    ((= 8 9) "not this either")
+    ((= 2 1) "not the third one")
+    (true "the default")))
+
+(defvar myCond3 (cond
+    ((= 5 5) "this")
+    (true "default")))
+
+(defvar myCondFallthrough (cond
+    (false "not this")))
+
+(defvar myOr1 (or null 5))
+
+(defvar myAnd1 (and 5 6))
+(defvar myAnd2 (and false 5 6))
+(defvar myAnd3 (and 5 false 6))
+
+(defun mySetLocal []
+    (deflocal &mut loc "one thing")
+    (set loc "another thing")
+    loc)
+
+(defvar myNot1 (not 5))
+(defvar myNot2 !5)
+
+(defvar myFilteredList (begin 
+    (deflocal l [-1 -2 5 -3 6])
+    (l.filter (lambda [v] (< 0 v)))))
+
+(defvar myWhen1 (when true 5 6))
+
+(defvar myListOfTen [1 2 3 4 5 6 7 8 9 10])
+
+(defun _testQuickNths []
+    (Assert.equals 1 (first myListOfTen))
+    (Assert.equals 2 (second myListOfTen))
+    (Assert.equals 3 (third myListOfTen))
+    (Assert.equals 4 (fourth myListOfTen))
+    (Assert.equals 5 (fifth myListOfTen))
+    (Assert.equals 6 (sixth myListOfTen))
+    (Assert.equals 7 (seventh myListOfTen))
+    (Assert.equals 8 (eighth myListOfTen))
+    (Assert.equals 9 (ninth myListOfTen))
+    (Assert.equals 10 (tenth myListOfTen))
+    (Assert.equals 10 (last myListOfTen)))
+
+(defun _testListDestructuring []
+    (deflocal [a b c d &mut e f g h i j] myListOfTen)
+    (Assert.equals 1 a)
+    (Assert.equals 2 b)
+    (Assert.equals 3 c)
+    (Assert.equals 4 d)
+    (Assert.equals 5 e)
+    (set e 6)
+    (Assert.equals 6 e)
+    (Assert.equals 6 f)
+    (Assert.equals 7 g)
+    (Assert.equals 8 h)
+    (Assert.equals 9 i)
+    (Assert.equals 10 j)
+
+    (let [[a b c &mut d e f g h i j] myListOfTen]
+        (Assert.equals 1 a)
+        (Assert.equals 2 b)
+        (Assert.equals 3 c)
+        (Assert.equals 4 d)
+        (set d 6)
+        (Assert.equals 6 d)
+        (Assert.equals 5 e)
+        (Assert.equals 6 f)
+        (Assert.equals 7 g)
+        (Assert.equals 8 h)
+        (Assert.equals 9 i)
+        (Assert.equals 10 j)))
+
+
+(defvar myMetaList [myListOfTen myListOfTen myListOfTen])
+
+(defun _testDoFor []
+    (deflocal &mut c 0)
+    (doFor v myListOfTen
+        (Assert.equals (+ c 1) v)
+        (set c v))
+    (doFor [a b c d e f g h i j] myMetaList
+        (Assert.equals 1 a)
+        (Assert.equals 2 b)
+        (Assert.equals 3 c)
+        (Assert.equals 4 d)
+        (Assert.equals 5 e)
+        (Assert.equals 6 f)
+        (Assert.equals 7 g)
+        (Assert.equals 8 h)
+        (Assert.equals 9 i)
+        (Assert.equals 10 j)))
+
+(defun _testFor []
+    (deflocal incrementedList (for v myListOfTen (+ 1 v)))
+    (let [[a b c d e f g h i j] incrementedList]
+        (Assert.equals 2 a)
+        (Assert.equals 3 b)
+        (Assert.equals 4 c)
+        (Assert.equals 5 d)
+        (Assert.equals 6 e)
+        (Assert.equals 7 f)
+        (Assert.equals 8 g)
+        (Assert.equals 9 h)
+        (Assert.equals 10 i)
+        (Assert.equals 11 j))
+    (deflocal smallerMetaList (for [a b c d e f g h i j] myMetaList [a e i]))
+    (doFor [a e i] smallerMetaList
+        (Assert.equals 1 a)
+        (Assert.equals 5 e)
+        (Assert.equals 10 i)))
+
+(defun myOptionalFunc [a &opt b c]
+    (Assert.equals 5 a)
+    (Assert.equals null b)
+    (Assert.equals 6 (or c 6))) // (or [optionalVar] [defaultValue]) is the convention for default values
+
+(defun myRestSum [firstOne &rest :List<Int> others]
+    (deflocal &mut sum firstOne)
+    (doFor nextOne others (set sum (+ sum nextOne)))
+    sum)
+
+(defvar myRest1 (myRestSum 5))
+(defvar myRest2 (myRestSum 1 1 1 1 1))
+(defvar myRest3 (myRestSum 1 2 2))
+
+(defun myCombinedOptRest [firstOne &opt secondOne &rest :List<String> thirdAndMore]
+    (deflocal &mut concatString (+ firstOne (or secondOne "boop")))
+    (doFor str thirdAndMore (set concatString (+ concatString str)))
+    concatString)
+
+(defvar myCombined1 (myCombinedOptRest "a" "b" "c" "d"))
+(defvar myCombined2 (myCombinedOptRest "a"))
+(defvar myCombined3 (myCombinedOptRest "a" "b"))
+
+(defun _testFieldExps []
+    (Assert.equals "hey" (.trim "  hey "))
+    (Assert.equals "e" (.charAt (.trim "  hey ") 1)))
+
+(defun _testBreakContinue []
+    (let [[a b c]
+                (for val [1 2 3 4 5 6 7 8]
+                    (if (> val 6)
+                            (break)
+                        (if (% val 2)
+                                (continue)
+                            val)))]
+        (Assert.equals 2 a)
+        (Assert.equals 4 b)
+        (Assert.equals 6 c)))
+
+(defun _testAssert []
+    (try
+            (assert false (+ "false " "should " "have " "been " "true"))
+        (catch [:String message]
+            (Assert.equals "Assertion false failed: false should have been true" message)))
+    
+    (assert true)
+    (assert ![]))
+
+(defun _testApply []
+    (Assert.equals 6 (apply + [1 2 3])))
+
+(defun applyWithMethod [obj]
+    (apply .multiply obj [6]))
+
+(defun _testAnonymousObject []
+    (let [obj
+                (object
+                    a "string A"
+                    b 5)]
+        (Assert.equals "string A" obj.a)
+        (Assert.equals 5 obj.b)))
