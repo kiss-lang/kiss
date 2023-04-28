@@ -6,6 +6,7 @@ import haxe.macro.Context;
 import haxe.macro.PositionTools;
 import sys.io.File;
 import haxe.io.Path;
+import kiss.Helpers;
 using kiss.Helpers;
 #end
 
@@ -166,7 +167,7 @@ class AsyncEmbeddedScript {
         }
 
         if (dslHaxelib.length > 0) {
-            dslFile = Path.join([Prelude.libPath(dslHaxelib), dslFile]);
+            dslFile = Path.join([Helpers.libPath(dslHaxelib), dslFile]);
         }
 
         // This brings in the DSL's functions and global variables.

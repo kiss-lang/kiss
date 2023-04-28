@@ -586,12 +586,14 @@ class Prelude {
      * So don't use raw string literals in Kiss you want parsed and evaluated at runtime.
      */
     public static function convertToHScript(kissStr:String):String {
+        var buildHxml = Sys.getEnv("KISS_BUILD_HXML");
+        var cwd = Path.directory(buildHxml);
         #if macro
         return Kiss.measure("Prelude.convertToHScript", () -> {
         #end
             #if (!macro && hxnodejs)
             var hscript = try {
-                assertProcess("haxelib", ["run", "kiss", "convert", "--all", "--hscript"], kissStr.split('\n'));
+                assertProcess("haxe", [buildHxml, "convert", "--all", "--hscript"], kissStr.split('\n'), true, cwd);
             } catch (e) {
                 throw 'failed to convert ${kissStr} to hscript:\n$e';
             }
@@ -601,7 +603,7 @@ class Prelude {
             return hscript.trim();
             #elseif (!macro && python)
             var hscript = try {
-                assertProcess("haxelib", ["run", "kiss", "convert", "--hscript"], [kissStr.replace('\n', ' ')], false);
+                assertProcess("haxe", [buildHxml, "convert", "--hscript"], [kissStr.replace('\n', ' ')], false, cwd);
             } catch (e) {
                 throw 'failed to convert ${kissStr} to hscript:\n$e';
             }
@@ -610,8 +612,11 @@ class Prelude {
             }
             return hscript.trim();
             #elseif sys
+            var oldCwd = Sys.getCwd();
+            Sys.setCwd(cwd);
+
             if (kissProcess == null)
-                kissProcess = new Process("haxelib", ["run", "kiss", "convert", "--hscript"]);
+                kissProcess = new Process("haxe", [buildHxml, "convert", "--hscript"]);
 
             kissProcess.stdin.writeString('${kissStr.replace("\n", " ")}\n');
 
@@ -620,9 +625,11 @@ class Prelude {
                 if (output.startsWith(">>> ")) {
                     output = output.substr(4);
                 }
+                Sys.setCwd(oldCwd);
                 return output;
             } catch (e) {
                 var error = kissProcess.stderr.readAll().toString();
+                Sys.setCwd(oldCwd);
                 throw 'failed to convert ${kissStr} to hscript: ${error}';
             }
             #else
@@ -784,11 +791,6 @@ class Prelude {
         handleError("Can't run a subprocess on this target.");
         return null;
         #end
-    }
-
-    // Get the path to a haxelib the user has installed
-    public static function libPath(haxelibName:String) {
-        return assertProcess("haxelib", ["libpath", haxelibName]).trim();
     }
 
     #if target.threaded

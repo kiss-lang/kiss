@@ -14,6 +14,8 @@ import kiss.Prelude;
 import kiss.cloner.Cloner;
 import uuid.Uuid;
 import sys.io.Process;
+import sys.FileSystem;
+import haxe.io.Path;
 
 using uuid.Uuid;
 using tink.MacroApi;
@@ -843,4 +845,42 @@ class Helpers {
                 throw KissError.fromExp(exp, '${description} should resolve at compile-time to a string literal of ${description2}');
         }
     }
+
+    // Get the path to a haxelib the program depends on
+    public static function libPath(haxelibName:String) {
+        var classPaths = Context.getClassPath();
+
+        for (dir in classPaths) {
+            var parts = Path.normalize(dir).split("/");
+            var matchingPartIndex = parts.indexOf(haxelibName);
+            
+
+            if (matchingPartIndex != -1) {
+                var path = parts.slice(0, matchingPartIndex + 1).join("/");
+
+                // TODO support all possible classPath formats:
+
+                // <libname>/<classPath...>
+                if (FileSystem.exists(Path.join([path, "haxelib.json"]))) return path;
+                
+                // <libname>/<version>/haxelib/<classPath...>
+                if (parts[matchingPartIndex + 2] == "haxelib") {
+                    var haxelibPath = parts.slice(0, matchingPartIndex + 3).join("/");
+                    if (FileSystem.exists(Path.join([haxelibPath, "haxelib.json"]))) return haxelibPath;
+                }
+
+                // <libname>/<version>/github/<commit>/<classPath...>
+                if (parts[matchingPartIndex + 2] == "github") {
+                    var githubPath = parts.slice(0, matchingPartIndex + 4).join("/");
+                    if (FileSystem.exists(Path.join([githubPath, "haxelib.json"]))) return githubPath;
+                }
+            }
+        }
+
+        // Special case fallback: kiss when its classpath is "src"
+        if (haxelibName == "kiss") return Path.directory(Sys.getEnv("KISS_BUILD_HXML"));
+
+        throw 'Could not find haxelib $haxelibName in class paths';
+    }
+
 }

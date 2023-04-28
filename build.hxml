@@ -2,5 +2,6 @@
 -lib hscript
 -lib uuid
 -lib tink_macro
---main kiss.Main
---interp
+-lib tink_syntaxhub
+-lib haxe-strings
+--run kiss.Main

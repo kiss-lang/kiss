@@ -6,6 +6,7 @@ import kiss.Reader;
 import kiss.ReaderExp;
 import kiss.Kiss;
 import kiss.KissError;
+import kiss.Helpers;
 import kiss.CompilerTools;
 import uuid.Uuid;
 import hscript.Parser;
@@ -44,10 +45,16 @@ class Macros {
             Kiss.load(compileTimeResolveToString("The only argument to (load...)", "a .kiss file path", args[0], k), k, null, false, wholeExp);
         };
 
+        k.doc("libPath", 1, 1, '(libPath <dependency>)');
+        macros["libPath"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            return b.str(Helpers.libPath(compileTimeResolveToString("The only argument to (libPath...)", "a haxelib dependency name", args[0], k)));
+        };
+
         k.doc("loadFrom", 2, 2, '(loadFrom "<haxelib name>" "<file.kiss>")');
         macros["loadFrom"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var libName = compileTimeResolveToString("The first argument to (loadFrom...)", "a haxe library's name", args[0], k);
-            var libPath = Prelude.libPath(libName);
+            var libPath = Helpers.libPath(libName);
             var otherKissFile = compileTimeResolveToString("The second argument to (loadFrom...)", "a .kiss file path", args[1], k);
             Kiss.load(otherKissFile, k, libPath, false, wholeExp);
         };

@@ -75,6 +75,8 @@ typedef KissState = {
 class Kiss {
     #if macro
     public static function defaultKissState(?context:FrontendContext):KissState {
+        Sys.putEnv("KISS_BUILD_HXML", Prelude.joinPath(Helpers.libPath("kiss"), "build.hxml"));
+
         var className = "";
         var pack = [];
         if (context == null) {
@@ -124,7 +126,6 @@ class Kiss {
                 "enumerate" => Symbol("Prelude.enumerate"),
                 "assertProcess" => Symbol("Prelude.assertProcess"),
                 "tryProcess" => Symbol("Prelude.tryProcess"),
-                "libPath" => Symbol("Prelude.libPath"),
                 "userHome" => Symbol("Prelude.userHome"),
                 "random" => Symbol("Std.random"),
                 "walkDirectory" => Symbol("Prelude.walkDirectory"),

@@ -5,7 +5,6 @@
 -lib tink_json
 -lib tink_syntaxhub
 -lib haxe-strings
--cp kiss/src
--cp cloner/src
+-cp src
 -D analyzer-optimize
 --macro kiss.KissFrontend.use()
