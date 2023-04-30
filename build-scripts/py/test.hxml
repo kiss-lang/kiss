@@ -1,2 +1,2 @@
 --python bin/py/test.py
---cmd bash kiss/build-scripts/py/test-py.sh
+--cmd bash build-scripts/py/test-py.sh
