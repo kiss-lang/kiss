@@ -337,7 +337,7 @@
     (try
             (assert false (+ "false " "should " "have " "been " "true"))
         (catch [:String message]
-            (Assert.equals "kiss/src/test/cases/BasicTestCase.kiss:338:13: Assertion failed: false should have been true
+            (Assert.equals "src/test/cases/BasicTestCase.kiss:338:13: Assertion failed: false should have been true
 From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" message)))
     
     (assert true)
