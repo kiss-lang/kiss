@@ -586,7 +586,7 @@ class Prelude {
      * So don't use raw string literals in Kiss you want parsed and evaluated at runtime.
      */
     public static function convertToHScript(kissStr:String):String {
-        var unsupportedMessage = "Can't convert Kiss to HScript on this target."
+        var unsupportedMessage = "Can't convert Kiss to HScript on this target.";
 
         #if (!sys && !hxnodejs)
         throw unsupportedMessage;
