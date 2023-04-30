@@ -7,7 +7,6 @@ import kiss.ReaderExp;
 import kiss.Kiss;
 import kiss.KissError;
 import kiss.Helpers;
-import kiss.CompilerTools;
 import uuid.Uuid;
 import hscript.Parser;
 import haxe.EnumTools;
@@ -1122,109 +1121,6 @@ class Macros {
             return b.call(b.symbol("Macros.exprCase"), [b.str(functionKey), toMatch, b.symbol("__interp__")]);
         };
 
-        // Maybe the NEW wildest code in Kiss?
-        k.doc("#extern", 4, null, "(#extern <BodyType> <lang> <?compileArgs object> [<typed bindings...>] <body...>)");
-        macros["#extern"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
-            var b = wholeExp.expBuilder();
-
-            // Skip all extern code generation if -D no-extern is provided to the compiler
-            if (Context.defined("no-extern")) {
-                return b.callSymbol("throw", [b.str("tried to call #extern code when -D no-extern was provided during compilation")]);
-            }
-
-            var bodyType = exps.shift();
-            var langExp = exps.shift();
-            var originalLang = langExp.symbolNameValue();
-            // make the lang argument forgiving, because many will assume it can match the compiler defines and command-line arguments of Haxe
-            var lang = switch (originalLang) {
-                case "python" | "py": "Python";
-                case "js" | "javascript": "JavaScript";
-                default: originalLang;
-            };
-
-            var allowedLangs = EnumTools.getConstructors(CompileLang);
-            if (allowedLangs.indexOf(lang) == -1) {
-                throw KissError.fromExp(langExp, 'unsupported lang for #extern: $originalLang should be one of $allowedLangs');
-            }
-            var langArg = EnumTools.createByName(CompileLang, lang);
-
-            var compileArgsExp = null;
-            var bindingListExp = null;
-            var nextArg = exps.shift();
-            switch (nextArg.def) {
-                case CallExp({pos: _, def: Symbol("object")}, _):
-                    compileArgsExp = nextArg;
-                    nextArg = exps.shift();
-                case ListExp(_):
-                // Let the next switch handle the binding list
-                default:
-                    throw KissError.fromExp(nextArg, "second argument to #extern can either be a CompileArgs object or a list of typed bindings");
-            }
-            switch (nextArg.def) {
-                case ListExp(_):
-                    bindingListExp = nextArg;
-                default:
-                    throw KissError.fromExp(nextArg, "#extern requires a list of typed bindings");
-            }
-
-            var compileArgs:CompilationArgs = if (compileArgsExp != null) {
-                Helpers.runAtCompileTimeDynamic(compileArgsExp, k);
-            } else {
-                {};
-            }
-
-            var bindingList = bindingListExp.bindingList("#extern", true);
-
-            var idx = 0;
-            var stringifyExpList = [];
-            var parseBindingList = [];
-            while (idx < bindingList.length) {
-                var type = "";
-                var untypedName = switch (bindingList[idx].def) {
-                    case TypedExp(_type, symbol = {pos: _, def: Symbol(name)}):
-                        type = _type;
-                        symbol;
-                    default: throw KissError.fromExp(bindingList[idx], "name in #extern binding list must be a typed symbol");
-                };
-                switch (bindingList[idx + 1].def) {
-                    // _ in the value position of the #extern binding list will reuse the name as the value
-                    case Symbol("_"):
-                        bindingList[idx + 1] = untypedName;
-                    default:
-                }
-
-                stringifyExpList.push(b.the(b.symbol("String"), b.callSymbol("tink.Json.stringify", [b.the(b.symbol(type), bindingList[idx + 1])])));
-                parseBindingList.push(bindingList[idx]);
-                // This will be called in the context where __args__ is Sys.args()
-                parseBindingList.push(b.callSymbol("tink.Json.parse", [b.callField("shift", b.symbol("__args__"), [])]));
-                idx += 2;
-            }
-
-            var externExps = [
-                b.let([b.symbol("__args__"), b.callSymbol("Sys.args", [])], [
-                    b.callSymbol("set", [
-                        b.symbol("Prelude.printStr"),
-                        b.symbol("Prelude._externPrintStr")
-                    ]),
-                    b.callSymbol("Prelude._printStr", [
-                        b.callSymbol("tink.Json.stringify", [
-                            b.the(bodyType, if (bindingList.length > 0) {
-                                b.let(parseBindingList, exps);
-                            } else {
-                                b.begin(exps);
-                            })
-                        ])
-                    ]),
-                    b.callSymbol("Sys.exit", [b.symbol("0")])
-                ])
-            ];
-            b.the(
-                bodyType,
-                b.callSymbol("tink.Json.parse", [
-                    b.call(b.raw(CompilerTools.compileToScript(externExps, langArg, compileArgs, wholeExp).toString()), [b.list(stringifyExpList)])
-                ]));
-        };
-
         k.doc("countingLambda", 3, null, "(countingLambda <countVar> [<argsNames...>] <body...>)");
         macros["countingLambda"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
@@ -1312,8 +1208,6 @@ class Macros {
             var className = Context.getLocalClass().toString();
             var classSymbol = b.symbol(className);
 
-            // TODO this might be reusable for passing things to #extern
-            
             var classFieldsSymbol = b.symbol();
             var instanceFieldsSymbol = b.symbol();
             var interpSymbol = b.symbol();

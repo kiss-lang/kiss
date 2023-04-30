@@ -58,7 +58,6 @@ class Reader {
         forceSymbol("#unless");
         forceSymbol("#cond");
         forceSymbol("#case");
-        forceSymbol("#extern");
         forceSymbol("#value");
         forceSymbol("#symbol");
 
