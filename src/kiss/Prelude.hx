@@ -590,7 +590,7 @@ class Prelude {
 
         #if (!sys && !hxnodejs)
         throw unsupportedMessage;
-        #end
+        #else
 
         var buildHxml = Sys.getEnv("KISS_BUILD_HXML");
         var cwd = Path.directory(buildHxml);
@@ -643,6 +643,7 @@ class Prelude {
             #end
         #if macro
         }, true);
+        #end
         #end
     }
 
