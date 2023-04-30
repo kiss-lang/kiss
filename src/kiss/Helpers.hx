@@ -849,6 +849,7 @@ class Helpers {
     // Get the path to a haxelib the program depends on
     public static function libPath(haxelibName:String) {
         var classPaths = Context.getClassPath();
+        classPaths.push(Path.normalize(Sys.getCwd()));
 
         for (dir in classPaths) {
             var parts = Path.normalize(dir).split("/");
