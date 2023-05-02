@@ -839,6 +839,22 @@ class Macros {
             ]);
         };
 
+        k.doc("collectWhileLet", 2, null, "(collectWhileLet [<bindings...>] <body...>)");
+        macros["collectWhileLet"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            var results = b.symbol();
+            var nextExp = b.symbol();
+            var body = b.begin(exps.slice(1));
+            return b.let([results, b.list([])], [
+                b.callSymbol("whileLet", [
+                    exps[0],
+                    b.let([nextExp, body],
+                        [b.callField("push", results, [nextExp])])
+                ]),
+                results
+            ]);
+        };
+
         k.doc("withTempSet", 2, null, "(withTempSet [<bindings...>] <body...>)");
         macros["withTempSet"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();

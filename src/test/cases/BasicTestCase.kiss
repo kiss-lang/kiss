@@ -679,7 +679,14 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
             stream (Stream.fromString "a\nb\nc")]
         (whileLet [(Some line) (stream.takeLine)]
             (Assert.equals (nth lines idx) line)
-            (+= idx 1))))
+            (+= idx 1)))
+    (let [lines ["a" "b" "c"]
+            options [(Some "a") (Some "b") (Some "c") None]
+            collected
+                (collectWhileLet [(Some line) (options.shift)]
+                    line)]
+        (doFor i (range collected.length)
+            (Assert.equals (nth lines i) (nth collected i)))))
 
 (function _testTrace []
     (Assert.equals 5 (trace 5 "num"))
