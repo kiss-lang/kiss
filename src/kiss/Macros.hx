@@ -766,13 +766,16 @@ class Macros {
             var bindingList = exps[0].bindingList("awaitLet");
 
             var firstName = bindingList.shift();
+            var firstNameString = firstName.symbolNameValue(true, true);
             var firstValue = bindingList.shift();
             var b = wholeExp.expBuilder();
+            var firstNameSymbol = b.symbol(firstNameString);
+            var firstNameType = Helpers.explicitTypeString(firstName);
 
             var rejectionHandlerArgsAndBody = [];
             if (rejectionHandler == null) {
                 function error(firstName:ReaderExp) {
-                    return b.callSymbol("+", [b.str('awaitLet ${firstName.symbolNameValue()} rejected promise: '), b.symbol("reason")]);
+                    return b.callSymbol("+", [b.str('awaitLet ${firstNameString} rejected promise: '), b.symbol("reason")]);
                 }
                 rejectionHandler = b.symbol();    
                 rejectionHandlerArgsAndBody = switch (exps[1].def) {
@@ -806,9 +809,13 @@ class Macros {
                 default:
             }
 
+            if (firstNameType != null) {
+                innerExp = b.let([firstName, b.callSymbol("cast", [firstNameSymbol])], [innerExp]);
+            }
+
             var exp = b.call(b.field("then", firstValue), [
                 b.callSymbol("lambda", [
-                    b.list([firstName]),
+                    b.list([firstNameSymbol]),
                     innerExp
                 ]),
                 rejectionHandler
