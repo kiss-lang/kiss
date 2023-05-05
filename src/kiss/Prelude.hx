@@ -493,12 +493,21 @@ class Prelude {
         return v;
     }
 
+    // GOTCHA: must be THROWN to type-unify
+    static function expected(s:ReaderExp, toBeWhat:String):String {
+        #if macro
+        throw 'expected ${kiss.Reader.toString(s.def)} to be ${toBeWhat}';
+        #else
+        throw 'expected $s to be ${toBeWhat}';
+        #end
+    }
+
     public static function symbolNameValue(s:ReaderExp, allowTyped:Null<Bool> = false, allowMeta:Null<Bool> = false):String {
         return switch (s.def) {
             case Symbol(name): name;
             case TypedExp(_, innerExp) if (allowTyped): symbolNameValue(innerExp, false); // Meta must always precede type annotation
             case MetaExp(_, innerExp) if (allowMeta): symbolNameValue(innerExp, allowTyped, false); // TODO will more than one meta on the same expression be necessary?
-            default: throw 'expected $s to be a plain symbol'; // TODO convert s def to print & modify this message to reflect allowTyped and allowMeta parameters
+            default: throw expected(s, "a plain symbol"); // TODO modify this message to reflect allowTyped and allowMeta parameters 
         };
     }
 
@@ -519,7 +528,7 @@ class Prelude {
             case Symbol(name): StrExp(name);
             case TypedExp(_, innerExp) if (allowTyped): symbolName(innerExp, false); // Meta must always precede type annotation
             case MetaExp(_, innerExp) if (allowMeta): symbolName(innerExp, allowTyped, false); // TODO will more than one meta on the same expression be necessary?
-            default: throw 'expected $s to be a plain symbol'; // TODO convert s def to print & modify this message to reflect allowTyped and allowMeta parameters;
+            default: throw expected(s, 'a plain symbol'); // TODO modify this message to reflect allowTyped and allowMeta parameters;
         };
     }
 
@@ -527,7 +536,7 @@ class Prelude {
         return switch (s.def) {
             case ListExp(exps):
                 exps;
-            default: throw 'expected $s to be a list expression';
+            default: throw expected(s, 'a list expression');
         };
     }
     
