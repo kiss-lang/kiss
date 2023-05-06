@@ -854,9 +854,8 @@ class Helpers {
         for (dir in classPaths) {
             var parts = Path.normalize(dir).split("/");
             var matchingPartIndex = parts.indexOf(haxelibName);
-            
 
-            if (matchingPartIndex != -1) {
+            while (matchingPartIndex != -1) {
                 var path = parts.slice(0, matchingPartIndex + 1).join("/");
 
                 // TODO support all possible classPath formats:
@@ -875,6 +874,8 @@ class Helpers {
                     var githubPath = parts.slice(0, matchingPartIndex + 4).join("/");
                     if (FileSystem.exists(Path.join([githubPath, "haxelib.json"]))) return githubPath;
                 }
+
+                matchingPartIndex = parts.indexOf(haxelibName, matchingPartIndex + 1);
             }
         }
 
