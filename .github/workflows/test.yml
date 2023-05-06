@@ -33,7 +33,7 @@ jobs:
         if: matrix.test-target == 'nodejs'
 
       # lix
-      - uses: kiss-lang/setup-lix@main
+      - uses: lix-pm/setup-lix@master
         with:
           lix-version: 15.12.0
 
