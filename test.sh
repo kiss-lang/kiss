@@ -9,6 +9,9 @@ fi
 
 if [ "$KISS_TARGET" = cpp ]; then
     lix install haxelib:hxcpp
+elif [ "$KISS_TARGET" = cs ]; then
+    lix install haxelib:hxcs
+fi
 elif [ "$KISS_TARGET" = nodejs ]; then
     lix install haxelib:hxnodejs
 fi
