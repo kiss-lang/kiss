@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-        if: test-target == 'nodejs'
+        if: matrix.test-target == 'nodejs'
 
       # lix
       - uses: kiss-lang/setup-lix@main
@@ -41,13 +41,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-        if: test-target == 'py'
+        if: matrix.test-target == 'py'
 
       # mono
       - run: brew install mono || brew link --overwrite mono
-        if: matrix.os == 'macos-latest' && test-target == 'cs'
+        if: matrix.os == 'macos-latest' && matrix.test-target == 'cs'
       - run: choco install mono
-        if: matrix.os == 'windows-latest' && test-target == 'cs'
+        if: matrix.os == 'windows-latest' && matrix.test-target == 'cs'
       - run: |
           # instructions for ubuntu 20.04 from here: https://www.mono-project.com/download/stable/#download-lin
           sudo apt install gnupg ca-certificates
@@ -55,7 +55,7 @@ jobs:
           echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
           sudo apt update
           sudo apt install mono-devel
-        if: matrix.os == 'ubuntu-latest' && test-target == 'cs'
+        if: matrix.os == 'ubuntu-latest' && matrix.test-target == 'cs'
 
       # run target test:
       - run: echo "KISS_TARGET=${{ matrix.test-target }}" >> $GITHUB_ENV
