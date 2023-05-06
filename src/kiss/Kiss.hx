@@ -588,6 +588,8 @@ class Kiss {
                     #end
                         Kiss.measure(mac, ()->macros[mac](exp, args.copy(), k), true);
                     #if !macrotest
+                    } catch (err:UnmatchedBracketSignal) {
+                        throw err;
                     } catch (error:KissError) {
                         throw error;
                     } catch (error:Dynamic) {
