@@ -3,6 +3,10 @@
 KISS_TARGET=${KISS_TARGET:-$1}
 KISS_TARGET=${KISS_TARGET:-interp}
 
+if [ -n "$CI_OS_NAME" ]; then
+    lix download
+fi
+
 if [ "$KISS_TARGET" = cpp ]; then
     lix install haxelib:hxcpp
 elif [ "$KISS_TARGET" = nodejs ]; then
