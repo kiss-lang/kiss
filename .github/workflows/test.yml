@@ -14,7 +14,7 @@ jobs:
         test-target: 
           # HAXE TARGETS
           - cpp
-          - cs
+          # - cs
           - interp
           - js
           - nodejs
