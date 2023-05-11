@@ -1063,6 +1063,10 @@ class Macros {
             null;
         };
 
+        k.macroVars["getCollectedExps"] = function(blockName) {
+            return k.collectedBlocks[blockName];
+        };
+
         k.doc("collectedBlocks", 1, 1, "(collectedBlocks <block symbol>)");
         macros["collectedBlocks"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var blockName = try {
