@@ -3,6 +3,7 @@ package kiss;
 import haxe.Json;
 import haxe.ds.StringMap;
 using hx.strings.Strings;
+import kiss.Prelude;
 
 typedef MapInfo = {
     file:String,
@@ -48,7 +49,8 @@ class FuzzyMapTools {
         }
 
         #if (test || debug)
-        trace('Fuzzy match $bestKey for $fuzzySearchKey score: $bestScore');
+        if (bestScore != 1)
+            Prelude.print('Fuzzy match $bestKey for $fuzzySearchKey score: $bestScore');
         #end
         
         return bestKey;
