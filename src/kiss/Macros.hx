@@ -886,9 +886,16 @@ class Macros {
             ]));
         };
 
-        k.doc("defnew", 1, null, "(defNew [<args...>] [<optional property bindings...>] <optional body...>");
+        k.doc("defnew", 1, null, "(defNew <optional &private> [<args...>] [<optional property bindings...>] <optional body...>");
         macros["defnew"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var args = exps.shift();
+            var isPrivate = false;
+            switch (args.def) {
+                case MetaExp("private", argsExp):
+                    isPrivate = true;
+                    args = argsExp;
+                default:
+            };
             var bindingList = [];
 
             if (exps.length != 0) {
@@ -954,9 +961,13 @@ class Macros {
 
             var b = wholeExp.expBuilder();
 
+            var nameSymbol = b.symbol("new");
+            if (isPrivate) {
+                nameSymbol = b.meta("private", nameSymbol);
+            }
             return b.begin(propertyDefs.concat([
                 b.call(b.symbol("method"), [
-                    b.symbol("new"),
+                    nameSymbol,
                     b.list(argList)
                 ].concat(firstExps).concat(propertySetExps).concat(exps))
             ]));
