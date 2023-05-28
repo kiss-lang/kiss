@@ -7,7 +7,7 @@
     "version": "0.0.1",
     "releasenote": "It isn't safe to use this library yet.",
     "contributors": ["NQNStudios"],
-    "classPath": "src/",
+    "classPath": "src",
     "main": "kiss.Main",
     "dependencies": {
         "hscript": "",
