@@ -393,8 +393,12 @@ class Macros {
         k.doc("assertEquals", 2, null, "(assertEquals <expected> <actual> <?more actual...>)");
         macros["assertEquals"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
-            b.callSymbol("assert", [b.callSymbol("=", exps)]);
-        }
+            var expected = b.symbol();
+            var actual = b.symbol();
+            b.let([expected, exps[0], actual, exps[1]], [
+                b.callSymbol("assert", [b.callSymbol("=", [expected, actual]), b.callSymbol("+", [b.str("expected "), expected, b.str("but it was "), actual])])
+            ]);
+        };
 
         function stringsThatMatch(exp:ReaderExp, formName:String) {
             return switch (exp.def) {
