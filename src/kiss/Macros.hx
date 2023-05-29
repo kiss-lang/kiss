@@ -396,7 +396,7 @@ class Macros {
             var expected = b.symbol();
             var actual = b.symbol();
             b.let([expected, exps[0], actual, exps[1]], [
-                b.callSymbol("assert", [b.callSymbol("=", [expected, actual]), b.callSymbol("+", [b.str("expected "), expected, b.str("but it was "), actual])])
+                b.callSymbol("assert", [b.callSymbol("=", [expected, actual]), b.callSymbol("+", [b.str("expected "), expected, b.str(" but it was "), actual])])
             ]);
         };
 
