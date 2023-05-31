@@ -778,32 +778,21 @@ class Macros {
 
             var rejectionHandlerArgsAndBody = [];
             if (rejectionHandler == null) {
-                function error(firstName:ReaderExp) {
-                    return b.callSymbol("+", [b.str('awaitLet ${firstNameString} rejected promise: '), b.symbol("reason")]);
-                }
-                rejectionHandler = b.symbol();    
-                rejectionHandlerArgsAndBody = switch (exps[1].def) {
+                switch (exps[1].def) {
                     case CallExp({pos: _, def: Symbol("catch")}, catchArgs):
                         exps.splice(1,1);
-                        catchArgs;
+                        rejectionHandler = b.symbol();    
+                        rejectionHandlerArgsAndBody = catchArgs;
                     default:
-                        [b.list([b.symbol("reason")])].concat([
-                            b.callSymbol("#when", [
-                                b.symbol("vscode"),
-                                b.callSymbol("Vscode.window.showErrorMessage", [error(firstName)]),
-                            ]),
-                            // If running VSCode js, this throw will be a no-op but it makes the expression type-unify:
-                            b.callSymbol("throw", [
-                                error(firstName)
-                            ])
-                        ]);
-                }
+                        rejectionHandler = b.callSymbol("Prelude.makeAwaitLetDefaultCatch", [b.str(firstNameString)]);
+                };
             }
 
             var innerExp = if (bindingList.length == 0) {
                 b.begin(exps.slice(1));
             } else {
-                awaitLet(rejectionHandler, wholeExp, [b.list(bindingList)].concat(exps.slice(1)), k);
+                var _rejectionHandler = if (rejectionHandlerArgsAndBody.length == 0) null else rejectionHandler;
+                awaitLet(_rejectionHandler, wholeExp, [b.list(bindingList)].concat(exps.slice(1)), k);
             };
             switch(firstName.def) {
                 case MetaExp("sync", firstName):
@@ -817,7 +806,9 @@ class Macros {
                 innerExp = b.let([firstName, b.callSymbol("cast", [firstNameSymbol])], [innerExp]);
             }
 
-            var exp = b.call(b.field("then", firstValue), [
+            var exp = b.callSymbol("Prelude.then", [
+                b.str(firstNameString),
+                firstValue,
                 b.callSymbol("lambda", [
                     b.list([firstNameSymbol]),
                     innerExp

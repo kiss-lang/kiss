@@ -26,3 +26,29 @@
             (Assert.pass)
             (async.done)
         }))
+
+
+(function _testAwaitLetDefaultCatch [:Async async]
+    (#if js
+            {
+                (set Prelude.makeAwaitLetDefaultCatch
+                    ->binding
+                        ->reason
+                            {
+                                (Assert.equals "result1" binding)
+                                (Assert.equals "rejection without a manually defined catch" reason)
+                                (awaitLet [result (Promise.reject "rejection with a manually defined catch")]
+                                            (catch [reason]
+                                                (Assert.equals "rejection with a manually defined catch" reason)
+                                                (async.done))
+                                            (Assert.fail)
+                                            (async.done))
+                            })
+                (awaitLet [result1 (Promise.reject "rejection without a manually defined catch")]
+                    (Assert.fail)
+                    (async.done))
+            }
+        {
+            (Assert.pass)
+            (async.done)
+        }))

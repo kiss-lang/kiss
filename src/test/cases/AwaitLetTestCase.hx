@@ -17,4 +17,8 @@ class AwaitLetTestCase extends Test {
     function testRejectedPromise(async:Async) {
         _testRejectedPromise(async);
     }
+
+    function testAwaitLetDefaultCatch(async:Async) {
+        _testAwaitLetDefaultCatch(async);
+    }
 }

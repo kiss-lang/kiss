@@ -6,6 +6,9 @@ import kiss.ReaderExp;
 import haxe.ds.Either;
 import haxe.Constraints;
 import haxe.DynamicAccess;
+#if js
+import js.lib.Promise;
+#end
 #if (!macro && hxnodejs)
 import js.node.ChildProcess;
 import js.node.Buffer;
@@ -860,6 +863,19 @@ class Prelude {
         return [for (file in FileSystem.readDirectory(dir)) {
             joinPath(dir, file);
         }];
+    }
+    #end
+
+    #if js
+    public static dynamic function makeAwaitLetDefaultCatch<TOut>(binding:String):PromiseHandler<Dynamic,TOut> {
+        return function (reason:Dynamic):Promise<TOut> {
+            throw 'awaitLet $binding rejected promise: $reason';
+        };
+    }
+
+    public static function then<T,TOut>(binding:String, thenable:Thenable<T>, handler:PromiseHandler<T,TOut>, ?rejectionHandler:PromiseHandler<Dynamic,TOut>) {
+        if (rejectionHandler == null) rejectionHandler = makeAwaitLetDefaultCatch(binding);
+        return thenable.then(handler, rejectionHandler);
     }
     #end
 
