@@ -1,4 +1,5 @@
-(var defaultMakeCatch Prelude.makeAwaitLetDefaultCatch)
+(#when js
+    (var defaultMakeCatch Prelude.makeAwaitLetDefaultCatch))
 
 (function _testAwaitLet [:utest.Async async]
     (#if js {
