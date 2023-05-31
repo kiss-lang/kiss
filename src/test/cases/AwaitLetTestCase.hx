@@ -10,6 +10,11 @@ import utest.Async;
 
 @:build(kiss.Kiss.build())
 class AwaitLetTestCase extends Test {
+    function testAwaitLet(async:utest.Async) {
+        _testAwaitLet(async);
+    }
+
+
     function testMultipleBindings(async:Async) {
         _testMultipleBindings(async);
     }

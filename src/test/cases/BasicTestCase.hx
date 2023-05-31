@@ -425,12 +425,6 @@ class BasicTestCase extends Test {
     }
     #end
 
-    #if js
-    function testAwaitLet(async:utest.Async) {
-        _testAwaitLet(async);
-    }
-    #end
-
     function testLambdaTypeAnnotations() {
         _testLambdaTypeAnnotations();
     }

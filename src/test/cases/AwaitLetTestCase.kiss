@@ -1,6 +1,55 @@
+(var defaultMakeCatch Prelude.makeAwaitLetDefaultCatch)
+
+(function _testAwaitLet [:utest.Async async]
+    (#if js {
+        (set Prelude.makeAwaitLetDefaultCatch defaultMakeCatch)
+        (localFunction :Promise<Bool> newPromise [:Bool succeed]
+            (new Promise
+                ->:Void [
+                    :Bool->Void resolve
+                    :Dynamic->Void reject
+                ] (if succeed (resolve true) (reject false))))
+                
+        (awaitLet [result (newPromise true)]
+            (catch [:Dynamic e] (Assert.fail))
+            (Assert.isTrue result)
+            (awaitLet [res1 (newPromise false)
+                        res2 (newPromise true)
+                        res3 (newPromise true)]
+                (catch [:Dynamic e]
+                    (Assert.isFalse e)
+                    (awaitLet [res1 (newPromise true)
+                                res2 (newPromise false)
+                                res3 (newPromise true)]
+                        (catch [:Dynamic e]
+                            (Assert.isFalse e)
+                            (awaitLet [res1 (newPromise true)
+                                        res2 (newPromise true)
+                                        res3 (newPromise false)]
+                                (catch [:Dynamic e]
+                                    (Assert.isFalse e)
+                                    (awaitLet [res1 (newPromise true)
+                                                res2 (newPromise res1)
+                                                res3 (newPromise res2)]
+                                        (Assert.isTrue ?(and res1 res2 res3))
+                                        (async.done))
+                                    e)
+                                (Assert.fail))
+                            e)
+                        (Assert.fail))
+                    e)
+                (Assert.fail)))
+    }
+    {
+        (Assert.pass)
+        (async.done)
+    })
+    )
+
 (function _testMultipleBindings [:Async async]
     (#if js
             {
+                (set Prelude.makeAwaitLetDefaultCatch defaultMakeCatch)
                 (awaitLet [a (Promise.resolve 1)
                             b (Promise.resolve 2)
                             c (Promise.resolve 3)]
@@ -15,6 +64,7 @@
 (function _testRejectedPromise [:Async async]
     (#if js
             {
+                (set Prelude.makeAwaitLetDefaultCatch defaultMakeCatch)
                 (awaitLet [result (Promise.reject "async error")]
                         (catch [reason]
                             (Assert.pass)
