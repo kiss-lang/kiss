@@ -777,6 +777,7 @@ class Macros {
             var firstNameType = Helpers.explicitTypeString(firstName);
 
             var rejectionHandlerArgsAndBody = [];
+            var usingDefaultHandler = false;
             if (rejectionHandler == null) {
                 switch (exps[1].def) {
                     case CallExp({pos: _, def: Symbol("catch")}, catchArgs):
@@ -784,6 +785,7 @@ class Macros {
                         rejectionHandler = b.symbol();    
                         rejectionHandlerArgsAndBody = catchArgs;
                     default:
+                        usingDefaultHandler = true;
                         rejectionHandler = b.callSymbol("Prelude.makeAwaitLetDefaultCatch", [b.str(firstNameString)]);
                 };
             }
@@ -791,7 +793,7 @@ class Macros {
             var innerExp = if (bindingList.length == 0) {
                 b.begin(exps.slice(1));
             } else {
-                var _rejectionHandler = if (rejectionHandlerArgsAndBody.length == 0) null else rejectionHandler;
+                var _rejectionHandler = if (usingDefaultHandler) null else rejectionHandler;
                 awaitLet(_rejectionHandler, wholeExp, [b.list(bindingList)].concat(exps.slice(1)), k);
             };
             switch(firstName.def) {
