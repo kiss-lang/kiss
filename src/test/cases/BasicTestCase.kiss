@@ -46,10 +46,11 @@
 (function _testCollect []
     (Assert.equals "[0,1,2]" (Std.string (collect (range 3)))))
 
-// Variadic math uses haxe's Lambda.fold under the hood
 (var mySum (+ 1 2 3))
 
-(var myDifference (- 5 4 3))
+(function _testSubtraction []
+    (Assert.equals -2 (- 5 4 3))
+    (Assert.equals -2 (- 2)))
 
 (function _testMultiplication [] 
     (Assert.equals 60 (* 2 5 6))

@@ -72,11 +72,11 @@ class BasicTestCase extends Test {
         Assert.equals(6, BasicTestCase.mySum);
     }
 
-    function testVariadicSubtract() {
-        Assert.equals(-2, BasicTestCase.myDifference);
+    function testSubtraction() {
+        _testSubtraction();
     }
 
-    function testVariadicMultiply() {
+    function testMultiplication() {
         _testMultiplication();
     }
 

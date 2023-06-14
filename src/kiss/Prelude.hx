@@ -103,6 +103,10 @@ class Prelude {
     public static var add:Function = makeVarArgsWithArrayCheck(_add, "+");
 
     static function _subtract(values:Array<Dynamic>):Dynamic {
+        // with one argument, just negate:
+        if (values.length == 1)
+            return -values[0];
+
         var difference:Float = values[0];
         for (value in values.slice(1))
             difference -= value;
