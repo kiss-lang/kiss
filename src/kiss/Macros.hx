@@ -1465,6 +1465,23 @@ class Macros {
             // Prelude.print(Reader.toString(exp.def));
             exp;
         };
+
+        k.doc("importWithDefAlias", 0, 0, '(importWithDefAlias)');
+        macros["importWithDefAlias"] = (_, _, k:KissState) -> {
+            k.specialForms.remove("import");
+            k.macros["import"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+                var b = wholeExp.expBuilder();
+                var type = switch (args[0].def) {
+                    case Symbol(typeName):
+                        typeName;
+                    default:
+                        throw KissError.fromExp(wholeExp, "the only argument to (import) when using (importWithDefAlias) should be a symbol of a type path");
+                };
+                var baseType = type.split(".").pop();
+                b.callSymbol("defAlias", [b.meta("type", b.symbol(baseType)), args[0]]);
+            };
+            null;
+        };
         
         k.doc("typeCase", 2, null, "(typeCase [<values>] ([:<Type> <name> <more typed names...>] <body>) <more cases...> (otherwise <required default>))");
         macros["typeCase"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
