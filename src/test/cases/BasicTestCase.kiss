@@ -1,3 +1,15 @@
+// DO NOT MOVE THIS OR ADD ANYTHING ABOVE IT! IT RELIES ON LINE NUMBERS!
+(function _testAssert []
+    (try
+            (assert false (+ "false " "should " "have " "been " "true"))
+        (catch [:String message]
+            (Assert.equals "src/test/cases/BasicTestCase.kiss:4:13: Assertion failed: false should have been true
+From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" message)))
+    
+    (assert true)
+    (assert ![])
+    (assertEquals 6 6 6))
+
 // (load) brings in the fields and compile-time definitions of another Kiss file
 (load "BasicTestCaseExtra.kiss")
 
@@ -333,17 +345,6 @@
         (Assert.equals 2 a)
         (Assert.equals 4 b)
         (Assert.equals 6 c)))
-
-(function _testAssert []
-    (try
-            (assert false (+ "false " "should " "have " "been " "true"))
-        (catch [:String message]
-            (Assert.equals "src/test/cases/BasicTestCase.kiss:338:13: Assertion failed: false should have been true
-From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" message)))
-    
-    (assert true)
-    (assert ![])
-    (assertEquals 6 6 6))
 
 (function _testApply []
     (Assert.equals 6 (apply + [1 2 3])))
