@@ -658,7 +658,7 @@ class Macros {
         var extractString = false;
 
         function getAliasName(k:KissState, nameExpWithMeta:ReaderExp, formName:String):String {
-            var error = KissError.fromExp(nameExpWithMeta, 'first argument to $formName should be &call [alias] or &ident [alias]');
+            var error = KissError.fromExp(nameExpWithMeta, 'first argument to $formName should be &call <alias> or &ident <alias> or &type <alias>');
             var nameExp = switch (nameExpWithMeta.def) {
                 case MetaExp("call", nameExp):
                     extractString = false;
@@ -1478,7 +1478,10 @@ class Macros {
                         throw KissError.fromExp(wholeExp, "the only argument to (import) when using (importWithDefAlias) should be a symbol of a type path");
                 };
                 var baseType = type.split(".").pop();
-                b.callSymbol("defAlias", [b.meta("type", b.symbol(baseType)), args[0]]);
+                b.begin([
+                    b.callSymbol("defAlias", [b.meta("type", b.symbol(baseType)), args[0]]),
+                    b.callSymbol("defAlias", [b.meta("ident", b.symbol(baseType)), args[0]])
+                ]);
             };
             null;
         };

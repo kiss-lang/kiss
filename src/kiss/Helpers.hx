@@ -76,7 +76,6 @@ class Helpers {
         return tokens.join("");
     }
 
-
     public static function parseComplexType(path:String, k:KissState, ?from:ReaderExp, mustResolve=false):ComplexType {
         path = replaceTypeAliases(path, k);
 
