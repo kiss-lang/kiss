@@ -951,3 +951,8 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (?.doThing obj)
         (?.doThing otherNameForObj))
     (Assert.pass))
+
+(function _testSplitByAll []
+    (Assert.equals
+        (Std.string ["Thing" "<" "Generic" ">" "->" "Thing"])
+        (Std.string (Prelude.splitByAll "Thing<Generic>->Thing" [">" "<" "->"]))))

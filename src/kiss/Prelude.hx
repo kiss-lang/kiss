@@ -352,6 +352,34 @@ class Prelude {
         return zipThrow(l1, l2);
     }
 
+    private static function _splitByAll(tokens:Array<String>, delimiters:Array<String>, delimIdx=0) {
+        if (delimIdx == delimiters.length) return tokens;
+
+        var nextDelim = delimiters[delimIdx];
+        tokens = Lambda.flatten([for (token in tokens) {
+            if (delimiters.indexOf(token) != -1) {
+                [token];
+            } else {
+                var innerTokens = token.split(nextDelim);
+                var innerTokensZippedWithDelimiter:Array<Array<String>> = zipThrow(innerTokens, [for (_ in 0... innerTokens.length) nextDelim]);
+                var innerTokensWithDelimiterBetween:Array<String> = Lambda.flatten(innerTokensZippedWithDelimiter);
+                innerTokensWithDelimiterBetween.pop();
+                innerTokensWithDelimiterBetween;
+            }
+        }]);
+
+        return _splitByAll(tokens, delimiters, delimIdx+1);
+    }
+
+    /*
+     * Split a string by multiple delimiters and include the delimiters as tokens
+     */
+    public static function splitByAll(s:String, delimiters:Array<String>) {
+        // Split by longer delimeters first i.e. "->" before ">" when type splitting
+        var delimiters = sort(delimiters, (a, b) -> b.length - a.length);
+        return filter(_splitByAll([s], delimiters));
+    }
+
     public static function reverse<T>(l:kiss.List<T>):kiss.List<T> {
         var c = l.copy();
         c.reverse();

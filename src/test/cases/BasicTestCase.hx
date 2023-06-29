@@ -15,6 +15,10 @@ using StringTools;
 
 @:build(kiss.Kiss.build())
 class BasicTestCase extends Test {
+    function testSplitByAll() {
+        _testSplitByAll();
+    }
+
     function testStaticVar() {
         Assert.equals("Howdy", BasicTestCase.message);
     }
