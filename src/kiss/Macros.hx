@@ -692,7 +692,7 @@ class Macros {
             if (extractString)
                 aliasMap[name] = switch (into) {
                     case Symbol(typeName):
-                        typeName;
+                        Helpers.replaceTypeAliases(typeName, k);
                     default:
                         throw KissError.fromExp(wholeExp, "type alias must be of a plain symbol");
                 }

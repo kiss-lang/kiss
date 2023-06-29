@@ -50,8 +50,7 @@ class Helpers {
     }
 
     public static function parseTypePath(path:String, k:KissState, ?from:ReaderExp):TypePath {
-        if (k.typeAliases.exists(path))
-            path = k.typeAliases[path];
+        path = replaceTypeAliases(path, k);
         return switch (parseComplexType(path, k, from)) {
             case TPath(path):
                 path;
@@ -65,9 +64,21 @@ class Helpers {
         };
     }
 
+    public static function replaceTypeAliases(path:String, k:KissState) {
+        var tokens = Prelude.splitByAll(path, ["->", "<", ">", ","]);
+        tokens = [for (token in tokens) {
+            if (k.typeAliases.exists(token)) {
+                k.typeAliases[token];
+            } else {
+                token;
+            }
+        }];
+        return tokens.join("");
+    }
+
+
     public static function parseComplexType(path:String, k:KissState, ?from:ReaderExp, mustResolve=false):ComplexType {
-        if (k.typeAliases.exists(path))
-            path = k.typeAliases[path];
+        path = replaceTypeAliases(path, k);
 
         // Trick Haxe into parsing it for us:
         var typeCheckStr = 'var thing:$path;';
@@ -111,9 +122,8 @@ class Helpers {
         return switch (nameExp.def) {
             case MetaExp(_, innerExp):
                 explicitTypeString(innerExp, k);
-            case TypedExp(type, _) if (k.typeAliases.exists(type)):
-                k.typeAliases[type];
             case TypedExp(type, _):
+                type = replaceTypeAliases(type, k);
                 type;
             default: null;
         };
@@ -140,10 +150,8 @@ class Helpers {
         if (constraints == null) constraints = [];
         switch (param.def) {
             case Symbol(name):
-                if (k.typeAliases.exists(name))
-                    name = k.typeAliases[name];
                 return {
-                    name: name,
+                    name: replaceTypeAliases(name, k),
                     constraints: constraints
                 };
             case TypedExp(type, param):
