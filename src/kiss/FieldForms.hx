@@ -103,7 +103,7 @@ class FieldForms {
             checkPrintFieldsCalledWarning(name, wholeExp, k);
             var access = fieldAccess(formName, name, args[0]);
 
-            var type = Helpers.explicitType(args[0]);
+            var type = Helpers.explicitType(args[0], k);
             k.addVarInScope(
                 {name: name, type: type}, 
                 false,

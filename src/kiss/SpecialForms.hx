@@ -116,7 +116,7 @@ class SpecialForms {
                 default: k.convert(args[0]).toString();
             };
 
-            ENew(Helpers.parseTypePath(classType, args[0]), args.slice(1).map(k.convert)).withMacroPosOf(wholeExp);
+            ENew(Helpers.parseTypePath(classType, k, args[0]), args.slice(1).map(k.convert)).withMacroPosOf(wholeExp);
         };
 
         k.doc("set", 2, 2, "(set <variable> <value>)");
@@ -162,7 +162,7 @@ class SpecialForms {
                 name: varName(nameExp),
                 type: switch (nameExp.def) {
                     case TypedExp(type, _):
-                        Helpers.parseComplexType(type, nameExp);
+                        Helpers.parseComplexType(type, k, nameExp);
                     default: null;
                 },
                 isFinal: isFinal && !k.hscript,
@@ -456,7 +456,7 @@ class SpecialForms {
             };
             if (pkg.length > 0)
                 type = pkg + "." + type;
-            ECheckType(k.convert(args[1]), Helpers.parseComplexType(type, wholeExp, !type.contains("<"))).withMacroPosOf(wholeExp);
+            ECheckType(k.convert(args[1]), Helpers.parseComplexType(type, k, wholeExp, !type.contains("<"))).withMacroPosOf(wholeExp);
         };
 
         k.doc("try", 1, null, "(try <thing> <catches...>)");
@@ -479,7 +479,7 @@ class SpecialForms {
                                 },
                                 type: switch (catchArgs[0].def) {
                                     case ListExp([{pos: _, def: TypedExp(type, _)}]):
-                                        Helpers.parseComplexType(type, catchArgs[0]);
+                                        Helpers.parseComplexType(type, k, catchArgs[0]);
                                     default: null;
                                 },
                                 expr: k.convert(CallExp(Symbol("begin").withPos(catchArgs[1].pos), catchArgs.slice(1)).withPos(catchArgs[1].pos))
@@ -539,7 +539,7 @@ class SpecialForms {
             if (args.length > 1) {
                 switch (args[1].def) {
                     case Symbol(typePath):
-                        t = Helpers.parseComplexType(typePath, wholeExp, !typePath.contains("<"));
+                        t = Helpers.parseComplexType(typePath, k, wholeExp, !typePath.contains("<"));
                     default:
                         throw KissError.fromExp(wholeExp, 'second argument to cast should be a type path symbol');
                 }

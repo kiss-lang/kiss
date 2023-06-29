@@ -186,7 +186,7 @@ class EmbeddedScript {
                 ret: null,
                 args: [
                     {
-                        type: Helpers.parseComplexType("(()->Void)->Void", null),
+                        type: Helpers.parseComplexType("(()->Void)->Void", k, null),
                         name: "c"
                     }
                 ],
@@ -207,10 +207,10 @@ class EmbeddedScript {
             name: "fork",
             access: [APublic],
             kind: FFun({
-                ret: Helpers.parseComplexType("Array<EmbeddedScript>", null),
+                ret: Helpers.parseComplexType("Array<EmbeddedScript>", k, null),
                 args: [
                     {
-                        type: Helpers.parseComplexType("Array<Command>", null),
+                        type: Helpers.parseComplexType("Array<Command>", k, null),
                         name: "commands"
                     }
                 ],

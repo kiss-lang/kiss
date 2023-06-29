@@ -359,7 +359,7 @@ class Main {
             v;
         }
         #if macro
-        var type = Context.resolveType(Helpers.parseComplexType(theInterface), Context.currentPos());
+        var type = Context.resolveType(Helpers.parseComplexType(theInterface, Kiss.defaultKissState()), Context.currentPos());
         switch (type) {
             case TInst(classTypeRef, params):
                 var classType = classTypeRef.get();

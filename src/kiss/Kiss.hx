@@ -51,6 +51,7 @@ typedef KissState = {
     loadedFiles:Map<String, Null<ReaderExp>>,
     callAliases:Map<String, ReaderExpDef>,
     identAliases:Map<String, ReaderExpDef>,
+    typeAliases:Map<String, String>,
     fieldList:Array<Field>,
     // TODO This map was originally created to track whether the programmer wrote their own main function, but could also
     // be used to allow macros to edit fields that were already defined (for instance, to decorate a function or add something
@@ -182,6 +183,7 @@ class Kiss {
                 /* concat used to live here as an alias but now it is in a macro that also
                 applies (the Array<Dynamic>) to the result */
             ],
+            typeAliases: new Map(),
             fieldList: [],
             fieldDict: new Map(),
             loadingDirectory: "",

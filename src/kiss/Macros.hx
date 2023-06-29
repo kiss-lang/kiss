@@ -654,16 +654,23 @@ class Macros {
 
         // Having this floating out here is sketchy, but should work out fine because the variable is always re-set
         // through the next function before being used in defalias or undefalias
-        var aliasMap:Map<String, ReaderExpDef> = null;
+        var aliasMap:Map<String, Dynamic> = null;
+        var extractString = false;
 
         function getAliasName(k:KissState, nameExpWithMeta:ReaderExp, formName:String):String {
             var error = KissError.fromExp(nameExpWithMeta, 'first argument to $formName should be &call [alias] or &ident [alias]');
             var nameExp = switch (nameExpWithMeta.def) {
                 case MetaExp("call", nameExp):
+                    extractString = false;
                     aliasMap = k.callAliases;
                     nameExp;
                 case MetaExp("ident", nameExp):
+                    extractString = false;
                     aliasMap = k.identAliases;
+                    nameExp;
+                case MetaExp("type", nameExp):
+                    aliasMap = k.typeAliases;
+                    extractString = true;
                     nameExp;
                 default:
                     throw error;
@@ -676,12 +683,21 @@ class Macros {
             };
         }
 
-        k.doc("defalias", 2, 2, "(defAlias <<&call or &ident> whenItsThis> <makeItThis>)");
+        k.doc("defalias", 2, 2, "(defAlias <<&call or &ident or &type> whenItsThis> <makeItThis>)");
         macros["defalias"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             k.stateChanged = true;
             var name = getAliasName(k, exps[0], "defAlias");
 
-            aliasMap[name] = exps[1].def;
+            var into = exps[1].def;
+            if (extractString)
+                aliasMap[name] = switch (into) {
+                    case Symbol(typeName):
+                        typeName;
+                    default:
+                        throw KissError.fromExp(wholeExp, "type alias must be of a plain symbol");
+                }
+            else
+                aliasMap[name] = into;
             return null;
         };
         renameAndDeprecate("defalias", "defAlias");
@@ -774,7 +790,7 @@ class Macros {
             var firstValue = bindingList.shift();
             var b = wholeExp.expBuilder();
             var firstNameSymbol = b.symbol(firstNameString);
-            var firstNameType = Helpers.explicitTypeString(firstName);
+            var firstNameType = Helpers.explicitTypeString(firstName, k);
 
             var rejectionHandlerArgsAndBody = [];
             var usingDefaultHandler = false;
@@ -1340,7 +1356,7 @@ class Macros {
             var b = wholeExp.expBuilder();
             var name = exps[0];
             var nameString = Prelude.symbolNameValue(name, true, false);
-            var type = Helpers.explicitTypeString(name);
+            var type = Helpers.explicitTypeString(name, k);
             var initialValue = exps[1];
             var filename = if (savedVarFilename != null) {
                 if (!savedVarFilename.endsWith(".json"))

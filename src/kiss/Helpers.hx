@@ -49,8 +49,10 @@ class Helpers {
         return s.charAt(0) == s.charAt(0).toUpperCase();
     }
 
-    public static function parseTypePath(path:String, ?from:ReaderExp):TypePath {
-        return switch (parseComplexType(path, from)) {
+    public static function parseTypePath(path:String, k:KissState, ?from:ReaderExp):TypePath {
+        if (k.typeAliases.exists(path))
+            path = k.typeAliases[path];
+        return switch (parseComplexType(path, k, from)) {
             case TPath(path):
                 path;
             default:
@@ -63,7 +65,10 @@ class Helpers {
         };
     }
 
-    public static function parseComplexType(path:String, ?from:ReaderExp, mustResolve=false):ComplexType {
+    public static function parseComplexType(path:String, k:KissState, ?from:ReaderExp, mustResolve=false):ComplexType {
+        if (k.typeAliases.exists(path))
+            path = k.typeAliases[path];
+
         // Trick Haxe into parsing it for us:
         var typeCheckStr = 'var thing:$path;';
         var errorMessage = 'Haxe could not parse a complex type from `$path` in `${typeCheckStr}`';
@@ -102,20 +107,22 @@ class Helpers {
         }
     }
 
-    public static function explicitTypeString(nameExp:ReaderExp):String {
+    public static function explicitTypeString(nameExp:ReaderExp, k:KissState):String {
         return switch (nameExp.def) {
             case MetaExp(_, innerExp):
-                explicitTypeString(innerExp);
+                explicitTypeString(innerExp, k);
+            case TypedExp(type, _) if (k.typeAliases.exists(type)):
+                k.typeAliases[type];
             case TypedExp(type, _):
                 type;
             default: null;
         };
     }
 
-    public static function explicitType(nameExp:ReaderExp):ComplexType {
-        var string = explicitTypeString(nameExp);
+    public static function explicitType(nameExp:ReaderExp, k:KissState):ComplexType {
+        var string = explicitTypeString(nameExp, k);
         if (string == null) return null; 
-        return Helpers.parseComplexType(string, nameExp);
+        return Helpers.parseComplexType(string, k, nameExp);
     }
 
     public static function varName(formName:String, nameExp:ReaderExp, nameType = "variable") {
@@ -129,17 +136,19 @@ class Helpers {
         };
     }
 
-    public static function makeTypeParam(param:ReaderExp, ?constraints:Array<ComplexType> = null):TypeParamDecl {
+    public static function makeTypeParam(param:ReaderExp, k:KissState, ?constraints:Array<ComplexType> = null):TypeParamDecl {
         if (constraints == null) constraints = [];
         switch (param.def) {
             case Symbol(name):
+                if (k.typeAliases.exists(name))
+                    name = k.typeAliases[name];
                 return {
                     name: name,
                     constraints: constraints
                 };
             case TypedExp(type, param):
-                constraints.push(parseComplexType(type));
-                return makeTypeParam(param, constraints);
+                constraints.push(parseComplexType(type, k));
+                return makeTypeParam(param, k, constraints);
             default:
                 throw KissError.fromExp(param, "expected <GenericTypeName> or :<Constraint> <GenericTypeName>");
         }
@@ -152,7 +161,7 @@ class Helpers {
             "";
         };
 
-        var params = [for (p in typeParams) makeTypeParam(p)];
+        var params = [for (p in typeParams) makeTypeParam(p, k)];
 
         var numArgs = 0;
         // Once the &opt meta appears, all following arguments are optional until &rest
@@ -171,7 +180,7 @@ class Helpers {
                         throw KissError.fromExp(funcArg, "lambda does not support &rest arguments");
                     }
 
-                    var typeOfRestArg = explicitTypeString(funcArg);
+                    var typeOfRestArg = explicitTypeString(funcArg, k);
                     var isDynamicArray = switch (typeOfRestArg) {
                         case "Array<Dynamic>" | "kiss.List<Dynamic>" | "List<Dynamic>":
                             true;
@@ -219,7 +228,7 @@ class Helpers {
                         },
                         type: switch (funcArg.def) {
                             case TypedExp(type, _):
-                                Helpers.parseComplexType(type, funcArg);
+                                Helpers.parseComplexType(type, k, funcArg);
                             default: null;
                         },
                         opt: opt
@@ -269,7 +278,7 @@ class Helpers {
         // But setting null arguments to default values is so common, and arguments are not settable references,
         // so function args are not immutable.
         return {
-            ret: if (name != null) Helpers.explicitType(name) else null,
+            ret: if (name != null) Helpers.explicitType(name, k) else null,
             args: args,
             expr: expr,
             params: params
@@ -470,14 +479,14 @@ class Helpers {
     }
     // hscript.Interp is very finicky about some edge cases.
     // This function handles them
-    private static function mapForInterp(expr:Expr):Expr {
+    private static function mapForInterp(expr:Expr, k:KissState):Expr {
         return expr.map(subExp -> {
             switch (subExp.expr) {
                 case ETry(e, catches):
                     catches = [for (c in catches) {
                         // hscript.Parser expects :Dynamic after the catch varname
                         {
-                            type: Helpers.parseComplexType("Dynamic"),
+                            type: Helpers.parseComplexType("Dynamic", k),
                             name: c.name,
                             expr: c.expr
                         };
@@ -486,14 +495,14 @@ class Helpers {
                         pos: subExp.pos,
                         expr: ETry(e, catches)
                     };
-                default: mapForInterp(subExp);
+                default: mapForInterp(subExp, k);
             }
         });
     }
 
     static var parser = new Parser(); 
     static function compileTimeHScript(exp:ReaderExp, k:KissState) {
-        var hscriptExp = mapForInterp(k.forMacroEval().convert(exp));
+        var hscriptExp = mapForInterp(k.forMacroEval().convert(exp), k);
         var code = hscriptExp.toString(); // tink_macro to the rescue
         #if macrotest
         Prelude.print("Compile-time hscript: " + code);
