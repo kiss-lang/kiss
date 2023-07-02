@@ -355,7 +355,7 @@ class Kiss {
             });
             for (label => timeSpent in profileAggregates) {
                 var usageCount = profileUsageCounts[label];
-                if (timeSpent >= SIGNIFICANT_TIME_SPENT) {
+                if ((timeSpent / usageCount) >= SIGNIFICANT_TIME_SPENT) {
                     Sys.println('${label} (x${usageCount}): ${timeSpent}');
                 }
             }
