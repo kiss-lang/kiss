@@ -542,7 +542,11 @@ class Prelude {
             case Symbol(name): name;
             case TypedExp(_, innerExp) if (allowTyped): symbolNameValue(innerExp, false); // Meta must always precede type annotation
             case MetaExp(_, innerExp) if (allowMeta): symbolNameValue(innerExp, allowTyped, false); // TODO will more than one meta on the same expression be necessary?
-            default: throw expected(s, "a plain symbol"); // TODO modify this message to reflect allowTyped and allowMeta parameters 
+            default:
+                var allowed = "a plain symbol";
+                if (allowTyped) allowed += " or a :Typed symbol";
+                if (allowMeta) allowed += " or a &meta symbol";
+                throw expected(s, allowed);
         };
     }
 
