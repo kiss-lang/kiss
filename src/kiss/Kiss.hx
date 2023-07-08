@@ -377,7 +377,10 @@ class Kiss {
         } else {
             Path.join([loadingDirectory, kissFile]);
         };
-        Context.registerModuleDependency(Context.getLocalModule(), fullPath);
+        
+        var module = Context.getLocalModule();
+        if (module.length > 0)
+            Context.registerModuleDependency(module, fullPath);
 
         var previousFile = k.file;
         k.file = fullPath;
