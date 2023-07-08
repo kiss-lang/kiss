@@ -377,6 +377,8 @@ class Kiss {
         } else {
             Path.join([loadingDirectory, kissFile]);
         };
+        Context.registerModuleDependency(Context.getLocalModule(), fullPath);
+
         var previousFile = k.file;
         k.file = fullPath;
 
@@ -450,9 +452,13 @@ class Kiss {
     }
 
     static var macroUsed = false;
-    static var expCache:haxe.DynamicAccess<String> = null;
-    static var cacheFile = ".kissCache.json";
-    static var cacheThreshold = 0.2;
+    
+    #if kissCache
+    @:persistent
+    static var expCache:Map<String,Expr> = null;
+
+    static var cacheThreshold = 0.05;
+    #end
     
     public static function readerExpToHaxeExpr(exp, k): Expr {
         return switch (macroExpandAndConvert(exp, k, false)) {
@@ -474,15 +480,11 @@ class Kiss {
         var str = Reader.toString(exp.def);
         if (!macroExpandOnly) {
             if (expCache == null) {
-                expCache = if (sys.FileSystem.exists(cacheFile)) {
-                    haxe.Json.parse(File.getContent(cacheFile));
-                } else {
-                    {};
-                }
+                expCache = new Map();
             }
             
             if (expCache.exists(str)) {
-                return Right(Context.parse(expCache[str], Helpers.macroPos(exp)));
+                return Right(expCache[str]);
             }
         }
         #end
@@ -683,10 +685,9 @@ class Kiss {
         if (!macroExpandOnly) {
             if (conversionTime > cacheThreshold && !k.stateChanged) {
                 expCache[str] = switch (expr) {
-                    case Right(expr): expr.toString();
+                    case Right(expr): expr;
                     default: throw "macroExpandAndConvert is broken";
                 }
-                File.saveContent(cacheFile, haxe.Json.stringify(expCache));
             }
         }
         #end

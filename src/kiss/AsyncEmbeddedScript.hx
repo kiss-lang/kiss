@@ -175,6 +175,8 @@ class AsyncEmbeddedScript {
         classFields = classFields.concat(Kiss.build(dslFile, k));
 
         scriptFile = Path.join([loadingDirectory, scriptFile]);
+        
+        Context.registerModuleDependency(Context.getLocalModule(), scriptFile);
         k.fieldList = [];
         Kiss._try(() -> {
             #if profileKiss

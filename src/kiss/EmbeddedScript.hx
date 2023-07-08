@@ -63,6 +63,7 @@ class EmbeddedScript {
         // As a side-effect, it also fills the KissState with the macros and reader macros that make the DSL syntax
         classFields = classFields.concat(Kiss.build(dslFile, k));
         scriptFile = Path.join([loadingDirectory, scriptFile]);
+        Context.registerModuleDependency(Context.getLocalModule(), scriptFile);
 
         Kiss._try(() -> {
             #if profileKiss
