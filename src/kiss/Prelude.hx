@@ -158,7 +158,7 @@ class Prelude {
         return Math.pow(base, exponent);
     }
 
-    static function _min(values:Array<Dynamic>):Dynamic {
+    public static function _min(values:Array<Dynamic>):Dynamic {
         var min = values[0];
         for (value in values.slice(1))
             min = Math.min(min, value);
@@ -167,7 +167,7 @@ class Prelude {
 
     public static var min:Function = makeVarArgsWithArrayCheck(_min, "min");
 
-    static function _max(values:Array<Dynamic>):Dynamic {
+    public static function _max(values:Array<Dynamic>):Dynamic {
         var max = values[0];
         for (value in values.slice(1)) {
             max = Math.max(max, value);

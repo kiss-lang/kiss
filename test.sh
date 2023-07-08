@@ -16,7 +16,18 @@ elif [ "$KISS_TARGET" = nodejs ]; then
 fi
 
 if [ ! -z "$2" ]; then
-    haxe -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
+    FLAGS=""
+    TWICE=""
+    if [ "$2" = "KissCacheTestCase" ]; then
+        haxe --wait 6000 || echo "server already running" &
+        TWICE=1
+        FLAGS="--connect 6001 -D kissCache"
+    fi
+    
+    haxe $FLAGS -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
+    if [ -n "$TWICE" ]; then
+        haxe $FLAGS -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
+    fi
 else
     haxe build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
 fi

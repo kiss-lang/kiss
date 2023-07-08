@@ -302,6 +302,10 @@ class Kiss {
     **/
     public static function build(?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext):Array<Field> {
 
+        #if kissCache
+        if (cache == null) cache = new KissCache();
+        #end
+
         var classPath = Context.getPosInfos(Context.currentPos()).file;
         // (load... ) relative to the original file
         var loadingDirectory = if (classPath == '?') {
@@ -360,6 +364,10 @@ class Kiss {
                 }
             }
 
+            #end
+
+            #if kissCache
+            
             #end
             k.fieldList;
         });
@@ -450,9 +458,12 @@ class Kiss {
     }
 
     static var macroUsed = false;
-    static var expCache:haxe.DynamicAccess<String> = null;
-    static var cacheFile = ".kissCache.json";
+    #if kissCache
+    @:persistent 
+    static var cache:KissCache;
+
     static var cacheThreshold = 0.2;
+    #end
     
     public static function readerExpToHaxeExpr(exp, k): Expr {
         return switch (macroExpandAndConvert(exp, k, false)) {
@@ -473,16 +484,8 @@ class Kiss {
         #if kissCache
         var str = Reader.toString(exp.def);
         if (!macroExpandOnly) {
-            if (expCache == null) {
-                expCache = if (sys.FileSystem.exists(cacheFile)) {
-                    haxe.Json.parse(File.getContent(cacheFile));
-                } else {
-                    {};
-                }
-            }
-            
-            if (expCache.exists(str)) {
-                return Right(Context.parse(expCache[str], Helpers.macroPos(exp)));
+            if (cache.cachedExps.exists(str)) {
+                return Right(cache.cachedExps[str]);
             }
         }
         #end
@@ -682,11 +685,10 @@ class Kiss {
         #if kissCache
         if (!macroExpandOnly) {
             if (conversionTime > cacheThreshold && !k.stateChanged) {
-                expCache[str] = switch (expr) {
-                    case Right(expr): expr.toString();
+                cache.cachedExps[str] = switch (expr) {
+                    case Right(expr): expr;
                     default: throw "macroExpandAndConvert is broken";
                 }
-                File.saveContent(cacheFile, haxe.Json.stringify(expCache));
             }
         }
         #end
