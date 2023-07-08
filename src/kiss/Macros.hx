@@ -1088,6 +1088,8 @@ class Macros {
         };
 
         k.macroVars["getCollectedExps"] = function(blockName) {
+            if (!k.collectedBlocks.exists(blockName))
+                throw 'no blocks for $blockName were collected. Try adding (collectBlocks ${blockName}) at the start of the file.';
             return k.collectedBlocks[blockName];
         };
 
