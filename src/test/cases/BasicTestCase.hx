@@ -355,6 +355,10 @@ class BasicTestCase extends Test {
         _testIntersect();
     }
 
+    function testWhile() {
+        _testWhile();
+    }
+
     function testWhileLet() {
         _testWhileLet();
     }

@@ -334,7 +334,7 @@ class SpecialForms {
         function whileForm(invert:Bool, wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) {
             var funcName = if (invert) "until" else "while";
             var b = wholeExp.expBuilder();
-            var cond = k.convert(b.callSymbol("Prelude.truthy", [args[0]]));
+            var cond = k.convert(b.callSymbol("Prelude.truthy", [args.shift()]));
             if (invert) {
                 cond = macro !$cond;
                 cond = b.haxeExpr(cond);

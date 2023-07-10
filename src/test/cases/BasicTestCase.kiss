@@ -675,6 +675,14 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         )
     (Assert.pass))
 
+(function _testWhile []
+    (let [max 8
+            &mut current 0
+            &mut iterations 0]
+        (while (>= max (+= current 1))
+            (+= iterations 1))
+        (Assert.equals 8 iterations)))
+
 (function _testWhileLet []
     (let [&mut idx 0
             lines ["a" "b" "c"]
