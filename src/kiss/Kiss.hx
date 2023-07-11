@@ -351,7 +351,9 @@ class Kiss {
                     });
                 }
 
-            #if profileKiss
+            #if (profileKiss == 1)
+            });
+            #elseif (profileKiss > 1)
             });
             for (label => timeSpent in profileAggregates) {
                 var usageCount = profileUsageCounts[label];
