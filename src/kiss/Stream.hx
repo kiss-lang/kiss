@@ -114,6 +114,11 @@ class Stream {
         };
     }
 
+    public function startsWithOneOf(strings:Array<String>) {
+        for (s in strings) if (startsWith(s)) return true;
+        return false;
+    }
+
     var lineLengths = [];
 
     /** Every drop call should end up calling dropChars() or the position tracker will be wrong. **/
