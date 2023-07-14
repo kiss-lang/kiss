@@ -137,8 +137,7 @@ class KissInterp extends Interp {
         locals = l;
     }
 
-    static var MAX_CHARS_PER_VAR = 80;
-    public function dumpVars(file="KissInterpVars.txt", truncateLongVars=true) {
+    public function dumpVars(file="KissInterpVars.txt", truncateLongVars=0) {
         var varDump = "LOCALS\n";
         varDump    += "======\n";
         for (key => value in locals) {
@@ -150,8 +149,8 @@ class KissInterp extends Interp {
             varDump += '$key: $value\n'; 
         }
 
-        if (truncateLongVars) {
-            varDump = [for (line in varDump.split("\n")) line.substr(0, MAX_CHARS_PER_VAR + line.indexOf(":") + 1)].join("\n");
+        if (truncateLongVars > 0) {
+            varDump = [for (line in varDump.split("\n")) line.substr(0, truncateLongVars + line.indexOf(":") + 1)].join("\n");
         }
 
         kiss.Prelude.print(varDump);
