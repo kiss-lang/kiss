@@ -55,6 +55,8 @@ class KissInterp extends Interp {
 
         // Might eventually need to simulate types in the namespace:
         variables.set("kiss", {});
+
+        variables.set("dumpVars", dumpVars);
     }
 
     public var cacheConvertedHScript = false;
@@ -133,6 +135,29 @@ class KissInterp extends Interp {
 
     public function setLocals(l) {
         locals = l;
+    }
+
+    static var MAX_CHARS_PER_VAR = 80;
+    public function dumpVars(file="KissInterpVars.txt", truncateLongVars=true) {
+        var varDump = "LOCALS\n";
+        varDump    += "======\n";
+        for (key => value in locals) {
+            varDump += '$key: $value\n'; 
+        }
+        varDump    += "GLOBALS\n";
+        varDump    += "=======\n";
+        for (key => value in variables) {
+            varDump += '$key: $value\n'; 
+        }
+
+        if (truncateLongVars) {
+            varDump = [for (line in varDump.split("\n")) line.substr(0, MAX_CHARS_PER_VAR + line.indexOf(":") + 1)].join("\n");
+        }
+
+        kiss.Prelude.print(varDump);
+        #if (sys || hxnodejs)
+        sys.io.File.saveContent(file, varDump);
+        #end
     }
 
 }
