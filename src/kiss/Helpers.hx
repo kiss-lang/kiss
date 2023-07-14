@@ -64,10 +64,10 @@ class Helpers {
         };
     }
 
-    public static function replaceTypeAliases(path:String, k:KissState) {
+    public static function replaceTypeAliases(path:String, ?k:KissState) {
         var tokens = Prelude.splitByAll(path, ["->", "<", ">", ","]);
         tokens = [for (token in tokens) {
-            if (k.typeAliases.exists(token)) {
+            if (k?.typeAliases.exists(token)) {
                 k.typeAliases[token];
             } else {
                 token;
@@ -117,7 +117,7 @@ class Helpers {
         }
     }
 
-    public static function explicitTypeString(nameExp:ReaderExp, k:KissState):String {
+    public static function explicitTypeString(nameExp:ReaderExp, ?k:KissState):String {
         return switch (nameExp.def) {
             case MetaExp(_, innerExp):
                 explicitTypeString(innerExp, k);
