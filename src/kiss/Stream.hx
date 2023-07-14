@@ -217,7 +217,18 @@ class Stream {
     }
 
     public function takeUntilAndDrop(s:String, allowEOF:Bool = false):Option<String> {
-        var idx = content.indexOf(s);
+        return _takeUntilAndDrop(s, allowEOF, false);
+    }
+
+    public function takeUntilLastAndDrop(s:String, allowEOF:Bool = false):Option<String> {
+        return _takeUntilAndDrop(s, allowEOF, true);
+    }
+
+    public function _takeUntilAndDrop(s:String, allowEOF:Bool, last:Bool):Option<String> {
+        var idx = if (last)
+            content.lastIndexOf(s);
+        else
+            content.indexOf(s);
 
         if (idx < 0) {
             return if (allowEOF) {
