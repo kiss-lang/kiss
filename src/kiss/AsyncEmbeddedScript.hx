@@ -317,7 +317,7 @@ class AsyncEmbeddedScript {
                     var exprString = Reader.toString(nextExp.def);
                     var fieldCount = k.fieldList.length;
                     var expr = Kiss.readerExpToHaxeExpr(nextExp, k);
-                    if (Kiss.isEmpty(expr))
+                    if (expr == null || Kiss.isEmpty(expr))
                         return;
                     expr = macro { if (printCurrentInstruction) Prelude.print($v{exprString}); $expr; };
                     expr = expr.expr.withMacroPosOf(nextExp);
