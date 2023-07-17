@@ -6,8 +6,11 @@ import haxe.macro.Context;
 import haxe.macro.PositionTools;
 import sys.io.File;
 import haxe.io.Path;
+using haxe.io.Path;
 import kiss.Helpers;
 using kiss.Helpers;
+using tink.MacroApi;
+
 #end
 
 import kiss.Kiss;
@@ -15,9 +18,31 @@ import kiss.ReaderExp;
 import kiss.Prelude;
 import kiss.cloner.Cloner;
 using StringTools;
+import hscript.Parser;
+import hscript.Interp;
 
 typedef Continuation = () -> Void;
 typedef AsyncCommand = (AsyncEmbeddedScript, Continuation) -> Void;
+
+class ObjectInterp<T> extends Interp {
+    var obj:T;    
+    public function new(obj:T) {
+        this.obj = obj;
+        
+        super();
+    }
+
+    override function resolve(id:String):Dynamic {
+        var fieldVal = Reflect.field(obj, id);
+        if (fieldVal != null)
+            return fieldVal;
+        else
+            return super.resolve(id);
+    }
+
+    // TODO setting variables should try to set them on the object,
+    // but Interp.assign and Interp.evalAssignOp look very complicated to override
+}
 
 /**
     Utility class for making statically typed, debuggable, ASYNC-BASED embedded Kiss-based DSLs.
@@ -30,6 +55,12 @@ class AsyncEmbeddedScript {
     private var lastInstructionPointer = -1;
     private var labels:Map<String,Int> = [];
     private var noSkipInstructions:Map<Int,Bool> = [];
+    
+    private var parser = new Parser();
+    private var interp:ObjectInterp<AsyncEmbeddedScript>;
+
+    private var hscriptInstructions:Map<Int,String> = [];    
+    private function hscriptInstructionFile() return "";
 
     public function setBreakHandler(handler:AsyncCommand) {
         onBreak = handler;
@@ -46,7 +77,17 @@ class AsyncEmbeddedScript {
         breakPoints.remove(instruction);
     }
 
-    public function new() {}
+    public function new() {
+        interp = new ObjectInterp(this);
+        if (hscriptInstructionFile().length > 0) {
+            #if (sys || hxnodejs)
+            var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(hscriptInstructionFile()));
+            for (key => value in cacheJson) {
+                hscriptInstructions[Std.parseInt(key)] = value;
+            }
+            #end
+        }
+    }
 
     private function resetInstructions() {}
 
@@ -54,6 +95,17 @@ class AsyncEmbeddedScript {
         if (instructions == null)
             resetInstructions();
         return instructions.length;
+    }
+
+    #if test
+    public var ranHscriptInstruction = false;
+    #end
+    private function runHscriptInstruction(instructionPointer:Int, cc:Continuation) {
+        #if test
+        ranHscriptInstruction = true;
+        #end
+        interp.variables['cc'] = cc;
+        interp.execute(parser.parseString(hscriptInstructions[instructionPointer]));
     }
 
     private function runInstruction(instructionPointer:Int, withBreakPoints = true) {
@@ -77,7 +129,11 @@ class AsyncEmbeddedScript {
         } else {
             () -> {};
         }
-        instructions[instructionPointer](this, continuation);
+        if (hscriptInstructions.exists(instructionPointer)) {
+            runHscriptInstruction(instructionPointer, continuation);
+        } else {
+            instructions[instructionPointer](this, continuation);
+        }
     }
 
     public function run(withBreakPoints = true) {
@@ -145,6 +201,17 @@ class AsyncEmbeddedScript {
         var loadingDirectory = Path.directory(classPath);
         var classFields = []; // Kiss.build() will already include Context.getBuildFields()
 
+        var hscriptInstructions:Map<String,String> = [];
+        var cache:Map<String,String> = [];
+        var cacheFile = scriptFile.withoutExtension() + ".cache.json";
+        if (sys.FileSystem.exists(cacheFile)) {
+            var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(cacheFile));
+            for (key => value in cacheJson)
+                cache[key] = value;
+        }
+
+        var hscriptInstructionFile = scriptFile.withoutExtension() + ".hscript.json";
+
         var commandList:Array<Expr> = [];
         var labelsList:Array<Expr> = [];
         var noSkipList:Array<Expr> = [];
@@ -174,6 +241,18 @@ class AsyncEmbeddedScript {
         // As a side-effect, it also fills the KissState with the macros and reader macros that make the DSL syntax
         classFields = classFields.concat(Kiss.build(dslFile, k));
 
+        if (Lambda.count(cache) > 0) {
+            classFields.push({
+                name: "hscriptInstructionFile",
+                access: [AOverride],
+                pos: Context.currentPos(),
+                kind: FFun({
+                    args: [],
+                    expr: macro return $v{hscriptInstructionFile}
+                })
+            });
+        }
+
         scriptFile = Path.join([loadingDirectory, scriptFile]);
         
         Context.registerModuleDependency(Context.getLocalModule(), scriptFile);
@@ -183,6 +262,14 @@ class AsyncEmbeddedScript {
             Kiss.measure('Compiling kiss: $scriptFile', () -> {
             #end
                 function process(nextExp) {
+                    var cacheKey = Reader.toString(nextExp.def);
+                    if (cache.exists(cacheKey)) {
+                        hscriptInstructions[Std.string(commandList.length)] = cache[cacheKey];
+                        trace(hscriptInstructions);
+                        commandList.push(macro null);
+                        return;
+                    }
+
                     nextExp = Kiss.macroExpand(nextExp, k);
                     
                     // Allow packing multiple commands into one exp with a (commands <...>) statement
@@ -208,6 +295,7 @@ class AsyncEmbeddedScript {
                         var c = macro function(self, cc) {
                             $expr;
                         };
+                        cache[cacheKey] = expr.toString();
                         commandList.push(c.expr.withMacroPosOf(nextExp));
                     }
 
@@ -241,6 +329,9 @@ class AsyncEmbeddedScript {
                 }
             })
         });
+
+        sys.io.File.saveContent(cacheFile, haxe.Json.stringify(cache));
+        sys.io.File.saveContent(hscriptInstructionFile, haxe.Json.stringify(hscriptInstructions));
 
         return classFields;
     }

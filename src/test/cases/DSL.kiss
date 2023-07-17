@@ -1,3 +1,4 @@
 // TODO make a better position reification scheme here
 (defReaderMacro "goop" [stream] `(Assert.isTrue true))
 (defReaderMacro "gloop" [stream] `(Assert.isFalse false))
+(prop Assert utest.Assert)

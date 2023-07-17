@@ -15,6 +15,10 @@ elif [ "$KISS_TARGET" = nodejs ]; then
     lix install haxelib:hxnodejs
 fi
 
+if [ -e DSLScript.cache.json ]; then
+    rm DSLScript*.json
+fi
+
 if [ ! -z "$2" ]; then
     haxe -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
 else
