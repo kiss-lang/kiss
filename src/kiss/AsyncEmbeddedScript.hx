@@ -265,7 +265,6 @@ class AsyncEmbeddedScript {
                     var cacheKey = Reader.toString(nextExp.def);
                     if (cache.exists(cacheKey)) {
                         hscriptInstructions[Std.string(commandList.length)] = cache[cacheKey];
-                        trace(hscriptInstructions);
                         commandList.push(macro null);
                         return;
                     }
