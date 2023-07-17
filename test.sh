@@ -15,8 +15,8 @@ elif [ "$KISS_TARGET" = nodejs ]; then
     lix install haxelib:hxnodejs
 fi
 
-if [ -e DSLScript.cache.json ]; then
-    rm DSLScript*.json
+if [ -e AsyncDSLScript.cache.json ]; then
+    rm AsyncDSLScript*.json
 fi
 
 if [ ! -z "$2" ]; then
