@@ -204,14 +204,14 @@ class AsyncEmbeddedScript {
 
         var hscriptInstructions:Map<String,String> = [];
         var cache:Map<String,String> = [];
-        var cacheFile = scriptFile.withoutExtension() + ".cache.json";
+        var cacheFile = scriptFile.withoutExtension().withoutDirectory() + ".cache.json";
         if (sys.FileSystem.exists(cacheFile)) {
             var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(cacheFile));
             for (key => value in cacheJson)
                 cache[key] = value;
         }
 
-        var hscriptInstructionFile = scriptFile.withoutExtension() + ".hscript.json";
+        var hscriptInstructionFile = scriptFile.withoutExtension().withoutDirectory() + ".hscript.json";
 
         var commandList:Array<Expr> = [];
         var labelsList:Array<Expr> = [];
