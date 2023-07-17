@@ -57,6 +57,10 @@ class ObjectInterp<T> extends Interp {
     }
  
 	public override function expr( e : hscript.Expr ) : Dynamic {
+        var curExpr = e;
+        #if hscriptPos
+		var e = e.e;
+		#end
         switch( e ) {
             case ECall(e,params):
                 switch( hscript.Tools.expr(e) ) {
@@ -69,7 +73,7 @@ class ObjectInterp<T> extends Interp {
                 }
             default:
         }
-        return super.expr(e);
+        return super.expr(curExpr);
     }
 }
 
