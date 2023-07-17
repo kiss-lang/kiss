@@ -40,8 +40,16 @@ class ObjectInterp<T> extends Interp {
             return super.resolve(id);
     }
 
-    // TODO setting variables should try to set them on the object,
-    // but Interp.assign and Interp.evalAssignOp look very complicated to override
+    // TODO every method of setting variables should try to set them on the object,
+    // but there are a lot of them and I might have missed some.
+
+    override function setVar(name:String, v:Dynamic) {
+        if (Reflect.field(obj, name) != null) {
+            Reflect.setField(obj, name, v);
+        } else {
+            super.setVar(name, v);
+        }
+    }
 }
 
 /**
