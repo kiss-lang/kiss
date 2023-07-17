@@ -284,6 +284,7 @@ class AsyncEmbeddedScript {
                     }
                     
                     var exprString = Reader.toString(nextExp.def);
+                    var fieldCount = k.fieldList.length;
                     var expr = Kiss.readerExpToHaxeExpr(nextExp, k);
                     if (Kiss.isEmpty(expr))
                         return;
@@ -295,7 +296,10 @@ class AsyncEmbeddedScript {
                         var c = macro function(self, cc) {
                             $expr;
                         };
-                        cache[cacheKey] = expr.toString();
+                        // If the expression didn't add any fields, it can be cached
+                        if (k.fieldList.length == fieldCount)
+                            cache[cacheKey] = expr.toString();
+
                         commandList.push(c.expr.withMacroPosOf(nextExp));
                     }
 
