@@ -79,6 +79,7 @@ class AsyncEmbeddedScript {
 
     public function new() {
         interp = new ObjectInterp(this);
+        kiss.KissInterp.prepare(interp);
         if (hscriptInstructionFile().length > 0) {
             #if (sys || hxnodejs)
             var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(hscriptInstructionFile()));

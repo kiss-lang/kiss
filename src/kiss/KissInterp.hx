@@ -20,34 +20,36 @@ class KissInterp extends Interp {
     var nullForUnknownVar:Bool;
     var parser = new Parser();
 
-    // TODO standardize this with KissConfig.prepareInterp
+    public static function prepare(interp:Interp) {
+        interp.variables.set("Reflect", Reflect);
+        interp.variables.set("Type", Type);
+        interp.variables.set("Prelude", Prelude);
+        interp.variables.set("Lambda", Lambda);
+        interp.variables.set("Std", Std);
+        interp.variables.set("Keep", ExtraElementHandling.Keep);
+        interp.variables.set("Drop", ExtraElementHandling.Drop);
+        interp.variables.set("Throw", ExtraElementHandling.Throw);
+        interp.variables.set("Math", Math);
+        interp.variables.set("Json", haxe.Json);
+        interp.variables.set("StringMap", InterpMap);
+        interp.variables.set("FuzzyMapTools", FuzzyMapTools);
+        interp.variables.set("StringTools", StringTools);
+        interp.variables.set("Path", haxe.io.Path);
+        #if (sys || hxnodejs)
+        interp.variables.set("Sys", Sys);
+        interp.variables.set("FileSystem", sys.FileSystem);
+        interp.variables.set("File", sys.io.File);
+        #end
+        #if (sys && !cs)
+        interp.variables.set("Http", sys.Http);
+        #end
+    }
+
     public function new(nullForUnknownVar = false) {
         super();
 
         this.nullForUnknownVar = nullForUnknownVar;
-
-        variables.set("Reflect", Reflect);
-        variables.set("Type", Type);
-        variables.set("Prelude", Prelude);
-        variables.set("Lambda", Lambda);
-        variables.set("Std", Std);
-        variables.set("Keep", ExtraElementHandling.Keep);
-        variables.set("Drop", ExtraElementHandling.Drop);
-        variables.set("Throw", ExtraElementHandling.Throw);
-        variables.set("Math", Math);
-        variables.set("Json", haxe.Json);
-        variables.set("StringMap", InterpMap);
-        variables.set("FuzzyMapTools", FuzzyMapTools);
-        variables.set("StringTools", StringTools);
-        variables.set("Path", haxe.io.Path);
-        #if (sys || hxnodejs)
-        variables.set("Sys", Sys);
-        variables.set("FileSystem", sys.FileSystem);
-        variables.set("File", sys.io.File);
-        #end
-        #if (sys && !cs)
-        variables.set("Http", sys.Http);
-        #end
+        prepare(this);
 
         #if macro
         variables.set("KissError", kiss.KissError);
