@@ -1081,6 +1081,7 @@ class Macros {
             k.collectedBlocks[blockName] = [];
             // TODO some assertion that the coder hasn't defined over another macro (also should apply to defMacro)
             macros[blockName] = (wholeExp:ReaderExp, innerExps:Array<ReaderExp>, k:KissState) -> {
+                k.stateChanged = true;
                 k.collectedBlocks[blockName] = k.collectedBlocks[blockName].concat(innerExps);
                 if (exps.length > 1) exps[1] else null;
             };

@@ -304,6 +304,7 @@ class AsyncEmbeddedScript {
                     }
 
                     nextExp = Kiss.macroExpand(nextExp, k);
+                    var stateChanged = k.stateChanged;
                     
                     // Allow packing multiple commands into one exp with a (commands <...>) statement
                     switch (nextExp.def) {
@@ -327,8 +328,8 @@ class AsyncEmbeddedScript {
                         var c = macro function(self, cc) {
                             $expr;
                         };
-                        // If the expression didn't add any fields, it can be cached
-                        if (k.fieldList.length == fieldCount)
+                        // If the expression didn't change the KissState when macroExpanding, it can be cached
+                        if (!stateChanged)
                             cache[cacheKey] = expr.toString();
 
                         commandList.push(c.expr.withMacroPosOf(nextExp));
