@@ -686,6 +686,8 @@ class Helpers {
                 compileTimeValueToReaderExp(unquoteValue, exp).def;
             case MetaExp(meta, innerExp):
                 MetaExp(meta, recurse(innerExp));
+            case HaxeMeta(name, params, innerExp):
+                HaxeMeta(name, params, recurse(innerExp));
             default:
                 throw KissError.fromExp(exp, 'unquote evaluation not implemented');
         };

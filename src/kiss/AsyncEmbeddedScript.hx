@@ -25,10 +25,15 @@ typedef Continuation = () -> Void;
 typedef AsyncCommand = (AsyncEmbeddedScript, Continuation) -> Void;
 
 class ObjectInterp<T> extends Interp {
-    var obj:T;    
+    var obj:T;
+    var fields:Map<String,Bool> = []; 
     public function new(obj:T) {
         this.obj = obj;
         
+        for (field in Type.getInstanceFields(Type.getClass(obj))) {
+            fields[field] = true;
+        }
+
         super();
     }
 
