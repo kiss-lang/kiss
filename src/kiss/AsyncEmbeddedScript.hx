@@ -192,6 +192,8 @@ class AsyncEmbeddedScript {
         return [for (label => ip in labels) label => () -> skipToInstruction(ip)];
     }
 
+    public var printCurrentInstruction = true;
+
     #if macro
     public static function build(dslHaxelib:String, dslFile:String, scriptFile:String):Array<Field> {
         // trace('AsyncEmbeddedScript.build $dslHaxelib $dslFile $scriptFile');
@@ -288,10 +290,8 @@ class AsyncEmbeddedScript {
                     var expr = Kiss.readerExpToHaxeExpr(nextExp, k);
                     if (Kiss.isEmpty(expr))
                         return;
-                    #if debug
-                    expr = macro { Prelude.print($v{exprString}); $expr; };
+                    expr = macro { if (printCurrentInstruction) Prelude.print($v{exprString}); $expr; };
                     expr = expr.expr.withMacroPosOf(nextExp);
-                    #end
                     if (expr != null) {
                         var c = macro function(self, cc) {
                             $expr;

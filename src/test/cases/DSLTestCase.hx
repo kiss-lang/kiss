@@ -42,6 +42,9 @@ class DSLScript extends EmbeddedScript {}
 @:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScript.dsl"))
 class AsyncDSLScript extends AsyncEmbeddedScript {}
 
+// One of these two classes will reuse instructions from the cache, but
+// I can't guarantee which one compiles first:
+
 @:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
 class AsyncDSLScriptThatWillCache extends AsyncEmbeddedScript {}
 
