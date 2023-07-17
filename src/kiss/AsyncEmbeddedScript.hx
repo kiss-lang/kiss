@@ -91,6 +91,10 @@ class AsyncEmbeddedScript {
     
     private var parser = new Parser();
     private var interp:ObjectInterp<AsyncEmbeddedScript>;
+    public var interpVariables(get, null):Map<String,Dynamic>;
+    private function get_interpVariables() {
+        return interp.variables;
+    }
 
     private var hscriptInstructions:Map<Int,String> = [];    
     private function hscriptInstructionFile() return "";
