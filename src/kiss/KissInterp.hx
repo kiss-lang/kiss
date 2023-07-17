@@ -53,6 +53,7 @@ class KissInterp extends Interp {
 
         #if macro
         variables.set("KissError", kiss.KissError);
+        variables.set("Reader", kiss.Reader);
         #end
 
         // Might eventually need to simulate types in the namespace:
