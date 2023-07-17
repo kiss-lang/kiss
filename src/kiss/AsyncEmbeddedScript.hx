@@ -135,6 +135,8 @@ class AsyncEmbeddedScript {
         ranHscriptInstruction = true;
         #end
         interp.variables['cc'] = cc;
+        if (printCurrentInstruction)
+            Prelude.print(hscriptInstructions[instructionPointer]);
         interp.execute(parser.parseString(hscriptInstructions[instructionPointer]));
     }
 
