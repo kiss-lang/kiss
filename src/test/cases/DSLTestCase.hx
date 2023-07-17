@@ -24,6 +24,7 @@ class DSLTestCase extends Test {
         Assert.isTrue(script.wholeScriptDone);
     }
     
+    #if (sys || hxnodejs)
     function testAsyncFromCache() {
         var script = new AsyncDSLScriptThatWillCache();
         script.run();
@@ -34,6 +35,7 @@ class DSLTestCase extends Test {
         Assert.isTrue(script.wholeScriptDone);
         Assert.isTrue(script2.wholeScriptDone);
     }
+    #end
 }
 
 @:build(kiss.EmbeddedScript.build("DSL.kiss", "DSLScript.dsl"))
