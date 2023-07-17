@@ -55,6 +55,22 @@ class ObjectInterp<T> extends Interp {
             super.setVar(name, v);
         }
     }
+ 
+	public override function expr( e : hscript.Expr ) : Dynamic {
+        switch( e ) {
+            case ECall(e,params):
+                switch( hscript.Tools.expr(e) ) {
+                    case EIdent(name) if (fields.exists(name)):
+                        var args = new Array();
+                        for( p in params )
+                            args.push(expr(p));
+                        return call(obj,expr(e),args);
+                    default:
+                }
+            default:
+        }
+        return super.expr(e);
+    }
 }
 
 /**
