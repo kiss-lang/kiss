@@ -14,6 +14,7 @@ using tink.MacroApi;
 #end
 
 import kiss.Kiss;
+using kiss.Kiss;
 import kiss.ReaderExp;
 import kiss.Prelude;
 import kiss.cloner.Cloner;
@@ -337,8 +338,10 @@ class AsyncEmbeddedScript {
                             $expr;
                         };
                         // If the expression didn't change the KissState when macroExpanding, it can be cached
-                        if (!stateChanged)
+                        if (!stateChanged) {
+                            var expr = Kiss.readerExpToHaxeExpr(nextExp, k.forHScript());
                             cache[cacheKey] = expr.toString();
+                        }
 
                         commandList.push(c.expr.withMacroPosOf(nextExp));
                     }
