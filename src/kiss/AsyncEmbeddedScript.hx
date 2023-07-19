@@ -261,6 +261,7 @@ class AsyncEmbeddedScript {
 
         var labelNum = 0;
         k.macros["label"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            k.stateChanged = true;
             wholeExp.checkNumArgs(1, 1, '(label <label>)');
             var label = Prelude.symbolNameValue(args[0]);
             label = '${++labelNum}. '.lpad("0", 5) + label;
@@ -270,6 +271,7 @@ class AsyncEmbeddedScript {
         };
 
         k.macros["noSkip"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            k.stateChanged = true;
             wholeExp.checkNumArgs(1, null, '(noSkip <body...>)');
             noSkipList.push(macro noSkipInstructions[$v{commandList.length}] = true);
 
