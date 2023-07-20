@@ -3,6 +3,7 @@
 KISS_TARGET=${KISS_TARGET:-$1}
 KISS_TARGET=${KISS_TARGET:-interp}
 
+FLAGS="-D kissCache" # for testing AsyncEmbeddedScript
 if [ -n "$CI_OS_NAME" ]; then
     lix download
 fi
@@ -20,7 +21,7 @@ if [ -e AsyncDSLScript.cache.json ]; then
 fi
 
 if [ ! -z "$2" ]; then
-    haxe -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
+    haxe $FLAGS -D cases=$2 build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
 else
-    haxe build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
+    haxe $FLAGS build-scripts/common-args.hxml build-scripts/common-test-args.hxml build-scripts/$KISS_TARGET/test.hxml
 fi
