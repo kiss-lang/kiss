@@ -9,6 +9,7 @@ using hx.strings.Strings;
 abstract FuzzyMap<T>(StringMap<T>) from StringMap<T> to StringMap<T> {
     public inline function new(?m:StringMap<T>) {
         this = if (m != null) m else new StringMap<T>();
+        FuzzyMapTools.fuzzyMaps[this] = true;
     }
 
     @:from

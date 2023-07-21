@@ -3,3 +3,5 @@
 (defReaderMacro "gloop" [stream] `(Assert.isFalse false))
 (prop &mut wholeScriptDone false)
 (prop Assert utest.Assert)
+(prop :FuzzyMap<Bool> fuzzyMap (new FuzzyMap<Bool>))
+(prop :Map<String,Bool> nonFuzzyMap (new Map))

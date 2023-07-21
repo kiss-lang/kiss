@@ -13,6 +13,13 @@ typedef MapInfo = {
 class FuzzyMapTools {
     static var serializingMaps = new Map<StringMap<Dynamic>, MapInfo>();
 
+    @:allow(kiss.FuzzyMap)
+    static var fuzzyMaps:Map<FuzzyMap<Dynamic>,Bool> = [];
+
+    public static function isFuzzy(map:Map<String,Dynamic>) {
+        return fuzzyMaps.exists(map);
+    }
+
     /**
     * FuzzyMap is highly inefficient, so you may wish to memoize the matches that it makes before
     * releasing your project. FuzzyMapTools.serializeMatches() helps with this

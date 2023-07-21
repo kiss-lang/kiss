@@ -5,6 +5,8 @@ import utest.Assert;
 import kiss.EmbeddedScript;
 import kiss.AsyncEmbeddedScript;
 import kiss.Prelude;
+import kiss.FuzzyMap;
+import kiss.FuzzyMapTools;
 
 class DSLTestCase extends Test {
     function testScript() {
