@@ -321,12 +321,14 @@ class AsyncEmbeddedScript {
             Kiss.measure('Compiling kiss: $scriptFile', () -> {
             #end
                 function process(nextExp) {
+                    #if kissCache
                     var cacheKey = Reader.toString(nextExp.def);
                     if (cache.exists(cacheKey)) {
                         hscriptInstructions[Std.string(commandList.length)] = cache[cacheKey];
                         commandList.push(macro null);
                         return;
                     }
+                    #end
 
                     nextExp = Kiss.macroExpand(nextExp, k);
                     var stateChanged = k.stateChanged;
@@ -354,10 +356,12 @@ class AsyncEmbeddedScript {
                             $expr;
                         };
                         // If the expression didn't change the KissState when macroExpanding, it can be cached
+                        #if kissCache
                         if (!stateChanged) {
                             var expr = Kiss.readerExpToHaxeExpr(nextExp, k.forHScript());
                             cache[cacheKey] = expr.toString();
                         }
+                        #end
 
                         commandList.push(c.expr.withMacroPosOf(nextExp));
                     }
