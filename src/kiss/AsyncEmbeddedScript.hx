@@ -63,6 +63,18 @@ class ObjectInterp<T> extends Interp {
 		var e = e.e;
 		#end
         switch( e ) {
+            // Handle fuzzyMaps correctly:
+            case EArray(e, index):
+                var arr:Dynamic = expr(e);
+                var index:Dynamic = expr(index);
+                if (isMap(arr)) {
+                    if (kiss.FuzzyMapTools.isFuzzy(arr))
+                        return getMapValue(arr, kiss.FuzzyMapTools.bestMatch(arr, index));
+                    return getMapValue(arr, index);
+                }
+                else {
+                    return arr[index];
+                }
             case ECall(e,params):
                 switch( hscript.Tools.expr(e) ) {
                     case EIdent(name) if (fields.exists(name)):
