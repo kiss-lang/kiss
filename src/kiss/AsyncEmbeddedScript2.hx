@@ -223,12 +223,8 @@ class AsyncEmbeddedScript2 {
         }
     }
 
-    public function runFromLabel(name:String) {
-        var ip = labels[name];
-        if (lastInstructionPointer > ip) {
-            throw "Rewinding AsyncEmbeddedScript is not implemented";
-        }
-        runFromInstruction(ip);
+    public function labelRunners(withBreakpoints = true):Map<String,AsyncEmbeddedScript2->Void> {
+        return [for (label => ip in labels) label => (newScript:AsyncEmbeddedScript2) -> newScript.runFromInstruction(ip, withBreakpoints)];
     }
 
     public var printCurrentInstruction = true;
