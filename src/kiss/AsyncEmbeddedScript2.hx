@@ -165,7 +165,10 @@ class AsyncEmbeddedScript2 {
 
     private var skipTarget:Null<Int> = null;
 
+    public var running(default, null):Bool = false;
+
     private function runInstruction(instructionPointer:Int, withBreakPoints = true) {
+        running = true;
         var skipping = false;
         if (skipTarget != null) {
             if (instructionPointer == skipTarget) {
