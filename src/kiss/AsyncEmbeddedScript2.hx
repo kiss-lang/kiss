@@ -215,6 +215,10 @@ class AsyncEmbeddedScript2 {
         runInstruction(0, withBreakpoints);
     }
 
+    public function runFromLabel(label:String) {
+        runFromInstruction(labels[label]);
+    }
+
     public function runFromNextLabel(newScript:AsyncEmbeddedScript2, withBreakpoints = true) {
         var labelPointers = [for (ip in labels) ip];
         labelPointers.sort(Reflect.compare);
@@ -230,6 +234,8 @@ class AsyncEmbeddedScript2 {
     public var onLabel:String->Void;
 
     public function labelRunners(withBreakpoints = true):Map<String,AsyncEmbeddedScript2->Void> {
+        if (instructions == null)
+            resetInstructions();
         return [for (label => ip in labels) label => (newScript:AsyncEmbeddedScript2) -> newScript.runFromInstruction(ip, withBreakpoints)];
     }
 
