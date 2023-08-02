@@ -258,13 +258,23 @@ class AsyncEmbeddedScript2 {
 
         var labelNum = 0;
         k.macros["label"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
-            k.stateChanged = true;
-            wholeExp.checkNumArgs(1, 1, '(label <label>)');
-            var label = Prelude.symbolNameValue(args[0]);
-            label = '${++labelNum}. '.lpad("0", 5) + label;
-            labelsList.push(macro labels[$v{label}] = $v{commandList.length});
-            
-            wholeExp.expBuilder().callSymbol("cc", []);
+            wholeExp.checkNumArgs(1, 1, '(label <labelSymbol for debug-only or "label string" for release>)');
+            switch (args[0].def) {
+                // Unless it's a debug build, ignore symbol labels
+                #if !debug
+                case Symbol(label):
+                    wholeExp.expBuilder().callSymbol("cc", []);
+                #end
+                case Symbol(label) | StrExp(label):
+                    k.stateChanged = true;
+                
+                    label = '${++labelNum}. '.lpad("0", 5) + label;
+                    labelsList.push(macro labels[$v{label}] = $v{commandList.length});
+                    
+                    wholeExp.expBuilder().callSymbol("cc", []);
+                default:
+                    throw KissError.fromExp(wholeExp, "bad (label) statement");
+            }
         };
 
         if (dslHaxelib.length > 0) {
