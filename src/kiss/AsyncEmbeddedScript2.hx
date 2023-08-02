@@ -223,6 +223,9 @@ class AsyncEmbeddedScript2 {
         }
     }
 
+    public var lastLabel(default, null):String = "";
+    public var onLabel:String->Void;
+
     public function labelRunners(withBreakpoints = true):Map<String,AsyncEmbeddedScript2->Void> {
         return [for (label => ip in labels) label => (newScript:AsyncEmbeddedScript2) -> newScript.runFromInstruction(ip, withBreakpoints)];
     }
@@ -271,7 +274,13 @@ class AsyncEmbeddedScript2 {
                     label = '${++labelNum}. '.lpad("0", 5) + label;
                     labelsList.push(macro labels[$v{label}] = $v{commandList.length});
                     
-                    wholeExp.expBuilder().callSymbol("cc", []);
+                    var b = wholeExp.expBuilder();
+                    
+                    b.begin([
+                        b.set(b.symbol("lastLabel"), b.str(label)),
+                        b.callSymbol("when", [b.symbol("onLabel"), b.callSymbol("onLabel", [b.str(label)])]),
+                        b.callSymbol("cc", [])
+                    ]);
                 default:
                     throw KissError.fromExp(wholeExp, "bad (label) statement");
             }
