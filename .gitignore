@@ -1,2 +1,3 @@
 AsyncDSLScript*.json
 bin/
+.DS_Store
