@@ -168,6 +168,7 @@ class AsyncEmbeddedScript2 {
     public var running(default, null):Bool = false;
 
     public var unwindStack(default, default):Bool = false;
+    public var alwaysUnwindStack(default, default):Bool = false;
 
     private function runInstruction(instructionPointer:Int, withBreakPoints = true) {
         running = true;
@@ -195,8 +196,10 @@ class AsyncEmbeddedScript2 {
                 // When this happens, make sure other scheduled continuations are canceled
                 // by verifying that lastInstructionPointer hasn't changed
                 if (lastInstructionPointer == instructionPointer) {
-                    if (unwindStack) {
+                    if (unwindStack || alwaysUnwindStack) {
                         haxe.Timer.delay(()->{runInstruction(instructionPointer + 1, withBreakPoints);}, 0);
+                        if (!alwaysUnwindStack)
+                            unwindStack = false;
                         return;
                     }
                     else {
