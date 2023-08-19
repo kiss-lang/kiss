@@ -167,10 +167,7 @@ class AsyncEmbeddedScript2 {
 
     public var running(default, null):Bool = false;
 
-    public var unwindStack(default, default):Bool = false;
-    public var alwaysUnwindStack(default, default):Bool = false;
-
-    private function runInstruction(instructionPointer:Int, withBreakPoints = true) {
+    private function runInstruction(instructionPointer:Int, withBreakPoints = true):Void {
         running = true;
         var skipping = false;
         if (skipTarget != null) {
@@ -190,21 +187,19 @@ class AsyncEmbeddedScript2 {
                 onBreak(this, false, () -> runInstruction(instructionPointer, false));
             }
         }
+        var tryCallNextWithTailRecursion = false;
+        var nextCalledWithTailRecursion = false;
         var continuation = if (instructionPointer < instructions.length - 1) {
             () -> {
                 // runInstruction may be called externally to skip through the script.
                 // When this happens, make sure other scheduled continuations are canceled
                 // by verifying that lastInstructionPointer hasn't changed
                 if (lastInstructionPointer == instructionPointer) {
-                    if (unwindStack || alwaysUnwindStack) {
-                        haxe.Timer.delay(()->{runInstruction(instructionPointer + 1, withBreakPoints);}, 0);
-                        if (!alwaysUnwindStack)
-                            unwindStack = false;
-                        return;
-                    }
-                    else {
-                        runInstruction(instructionPointer + 1, withBreakPoints);
-                    }
+                    tryCallNextWithTailRecursion = true;
+                    haxe.Timer.delay(()->{
+                        if (!nextCalledWithTailRecursion)
+                            runInstruction(instructionPointer + 1, withBreakPoints);
+                    }, 0);
                 }
             };
         } else {
@@ -214,6 +209,11 @@ class AsyncEmbeddedScript2 {
             runHscriptInstruction(instructionPointer, skipping, continuation);
         } else {
             instructions[instructionPointer](this, skipping, continuation);
+        }
+
+        if (tryCallNextWithTailRecursion) {
+            nextCalledWithTailRecursion = true;
+            runInstruction(instructionPointer + 1, withBreakPoints);
         }
     }
 
