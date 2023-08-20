@@ -899,6 +899,13 @@ class Macros {
             ]));
         };
 
+        k.doc("allowRuntimeConversion", 0, 0, "(allowRuntimeConversion)");
+        macros["allowRuntimeConversion"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            var buildHxmlPath = Prelude.joinPath(Helpers.libPath("kiss"), "build.hxml");
+            b.callSymbol("Sys.putEnv", [b.str("KISS_BUILD_HXML"), b.str(buildHxmlPath)]);
+        };
+
         k.doc("defnew", 1, null, "(defNew <optional &private> [<args...>] [<optional property bindings...>] <optional body...>");
         macros["defnew"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var args = exps.shift();
