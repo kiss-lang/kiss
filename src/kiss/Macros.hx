@@ -1446,9 +1446,22 @@ class Macros {
             }];
 
             var body = exps.slice(1);
-            b.let(Lambda.flatten(Prelude.zipThrow(uuids, savedVarList)), [
-                b.let(Lambda.flatten(Prelude.zipThrow(savedVarList, uuids)), body),
-            ].concat([for (savedVar in savedVarList) b.set(savedVar, uuids.shift())]));
+            var resultSymbol = b.symbol();
+            b.begin([
+                // Create a variable to hold the return value of the body
+                b.callSymbol("localVar", [b.meta("mut", resultSymbol), b.symbol("null")]),
+                // Retrieve all the desired properties in gensym variables
+                b.let(Lambda.flatten(Prelude.zipThrow(uuids, savedVarList)), [
+                    // Bind the gensym values BACK into their real names
+                    b.let(Lambda.flatten(Prelude.zipThrow(savedVarList, uuids)), [
+                        // Evaluate the body and save its result
+                        b.set(resultSymbol, b.begin(body))
+                    ]),
+                // Save out the ending values of the properties
+                ].concat([for (savedVar in savedVarList) b.set(savedVar, uuids.shift())])),
+                // Return the result of the body
+                resultSymbol
+            ]);
         };
 
         k.doc("withFunctions", 2, null, "(withFunctions [(<funcName1> [<args...>] <body...>) <more functions...>] <body...>)");
