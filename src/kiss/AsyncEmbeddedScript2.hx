@@ -167,14 +167,24 @@ class AsyncEmbeddedScript2 {
 
     public var running(default, null):Bool = false;
 
+    public var onSkipStart(default, null):Continuation2 = null;
+    public var onSkipEnd(default, null):Continuation2 = null;
+
     private function runInstruction(instructionPointer:Int, withBreakPoints = true):Void {
+        var wasRunning = running;
         running = true;
         var skipping = false;
         if (skipTarget != null) {
             if (instructionPointer == skipTarget) {
                 skipTarget = null;
+                if (onSkipEnd != null) {
+                    onSkipEnd();
+                }
             }
             else {
+                if (!wasRunning && onSkipStart != null) {
+                    onSkipStart();
+                }
                 skipping = true;
             }
         }
