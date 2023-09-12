@@ -166,6 +166,13 @@ class AsyncEmbeddedScript2 {
     private var skipTarget:Null<Int> = null;
 
     public var running(default, null):Bool = false;
+    
+    // There are two ways to keep the callstack unwound. The default is to use haxe.Timer.delay,
+    // which is automatic, but might introduce frame-skippy behaviors. The alternative is to
+    // set unwindWithTimerDelay to false, and use your own event loop to call ccToCall whenever
+    // it is non-null at the desired point in your update logic. Calling ccToCall will clear ccToCall.
+    public var unwindWithTimerDelay(default, default) = true;
+    public var ccToCall(default, null): Continuation2 = null;
 
     public var onSkipStart(default, null):Continuation2 = null;
     public var onSkipEnd(default, null):Continuation2 = null;
@@ -206,11 +213,19 @@ class AsyncEmbeddedScript2 {
                 // by verifying that lastInstructionPointer hasn't changed
                 if (lastInstructionPointer == instructionPointer) {
                     tryCallNextWithTailRecursion = true;
-                    haxe.Timer.delay(()->{
-                        if (!nextCalledWithTailRecursion)
+                    if (unwindWithTimerDelay) {
+                        haxe.Timer.delay(()->{
+                            if (!nextCalledWithTailRecursion)
+                                runInstruction(instructionPointer + 1, withBreakPoints);
+                        }, 0);
+                    } else {
+                        ccToCall = ()->{
+                            ccToCall = null;
                             runInstruction(instructionPointer + 1, withBreakPoints);
-                    }, 0);
+                        };
+                    }
                 }
+                return;
             };
         } else {
             () -> {};
@@ -223,6 +238,7 @@ class AsyncEmbeddedScript2 {
 
         if (tryCallNextWithTailRecursion) {
             nextCalledWithTailRecursion = true;
+            ccToCall = null;
             runInstruction(instructionPointer + 1, withBreakPoints);
         }
     }
