@@ -99,7 +99,7 @@ class AsyncEmbeddedScript2 {
     private var instructions:Array<AsyncCommand2> = null;
     private var breakPoints:Map<Int, () -> Bool> = [];
     private var onBreak:AsyncCommand2 = null;
-    private var lastInstructionPointer = -1;
+    public var lastInstructionPointer(default,null):Int = -1;
     private var labels:Map<String,Int> = [];
     private var noSkipInstructions:Map<Int,Bool> = [];
     
@@ -163,7 +163,7 @@ class AsyncEmbeddedScript2 {
         interp.execute(parser.parseString(hscriptInstructions[instructionPointer]));
     }
 
-    private var skipTarget:Null<Int> = null;
+    public var skipTarget(default, null):Null<Int> = null;
 
     public var running(default, null):Bool = false;
     
