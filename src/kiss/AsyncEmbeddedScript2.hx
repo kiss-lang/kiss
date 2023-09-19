@@ -176,6 +176,10 @@ class AsyncEmbeddedScript2 {
 
     public var onSkipStart(default, null):Continuation2 = null;
     public var onSkipEnd(default, null):Continuation2 = null;
+        
+    // When skipping, you might end up with hundreds of instructions running in a single frame.
+    // This flag forces the skipped instructions to run one-per-frame so your program doesn't hang.
+    public var skipAsync(default, null):Bool = false;
 
     private function runInstruction(instructionPointer:Int, withBreakPoints = true):Void {
         var wasRunning = running;
@@ -212,7 +216,8 @@ class AsyncEmbeddedScript2 {
                 // When this happens, make sure other scheduled continuations are canceled
                 // by verifying that lastInstructionPointer hasn't changed
                 if (lastInstructionPointer == instructionPointer) {
-                    tryCallNextWithTailRecursion = true;
+                    if (!skipping || !skipAsync)
+                        tryCallNextWithTailRecursion = true;
                     if (unwindWithTimerDelay) {
                         haxe.Timer.delay(()->{
                             if (!nextCalledWithTailRecursion)
