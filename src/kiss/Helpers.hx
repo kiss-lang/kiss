@@ -730,6 +730,12 @@ class Helpers {
         function let(bindings:Array<ReaderExp>, body:Array<ReaderExp>) {
             return callSymbol("let", [list(bindings)].concat(body));
         }
+        function _if(condition:ReaderExp, then:ReaderExp, ?_else:ReaderExp) {
+            var args = [condition, then];
+            if (_else != null)
+                args.push(_else);
+            return callSymbol("if", args);
+        }
         function throwAssertOrNeverError(messageExp:ReaderExp) {
             var failureError = KissError.fromExp(posRef, "").toString(AssertionFail);
             var colonsInPrefix = if (Sys.systemName() == "Windows") 5 else 4;
@@ -747,6 +753,7 @@ class Helpers {
             list: list,
             str: str,
             symbol: _symbol,
+            _if: _if,
             int: int,
             float: float,
             raw: raw,
