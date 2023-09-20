@@ -188,6 +188,10 @@ class AsyncEmbeddedScript2 {
         if (skipTarget != null) {
             if (instructionPointer == skipTarget) {
                 skipTarget = null;
+                lastLabel = potentialLastLabel;
+                if (onCommitLabel != null) {
+                    onCommitLabel(potentialLastLabel);
+                }
                 if (onSkipEnd != null) {
                     onSkipEnd();
                 }
@@ -273,7 +277,12 @@ class AsyncEmbeddedScript2 {
     }
 
     public var lastLabel(default, null):String = "";
+    private var potentialLastLabel:String = "";
+    
+    // Will be called EVERY time a label is reached, even if skipping past it:
     public var onLabel:String->Void;
+    // Will be called when labels are reached without skipping, AND on the last label skipped when skipping ends
+    public var onCommitLabel:String->Void;
 
     public function labelRunners(withBreakpoints = true):Map<String,AsyncEmbeddedScript2->Void> {
         if (instructions == null)
@@ -328,7 +337,12 @@ class AsyncEmbeddedScript2 {
                     var b = wholeExp.expBuilder();
                     
                     b.begin([
-                        b.set(b.symbol("lastLabel"), b.str(label)),
+                        b._if(b.symbol("skipping"),
+                                b.set(b.symbol("potentialLastLabel"), b.str(label)),
+                            b.begin([
+                                b.callSymbol("when", [b.symbol("onCommitLabel"), b.callSymbol("onCommitLabel", [b.str(label)])]),
+                                b.set(b.symbol("lastLabel"), b.str(label))
+                            ])),
                         b.callSymbol("when", [b.symbol("onLabel"), b.callSymbol("onLabel", [b.str(label)])]),
                         b.callSymbol("cc", [])
                     ]);
