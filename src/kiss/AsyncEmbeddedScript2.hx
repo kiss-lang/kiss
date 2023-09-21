@@ -13,6 +13,7 @@ using tink.MacroApi;
 
 #end
 
+import haxe.CallStack;
 import kiss.Kiss;
 using kiss.Kiss;
 import kiss.ReaderExp;
@@ -239,11 +240,14 @@ class AsyncEmbeddedScript2 {
         } else {
             () -> {};
         }
-        if (hscriptInstructions.exists(instructionPointer)) {
-            runHscriptInstruction(instructionPointer, skipping, continuation);
-        } else {
-            instructions[instructionPointer](this, skipping, continuation);
-        }
+
+        runWithErrorChecking(() -> {
+            if (hscriptInstructions.exists(instructionPointer)) {
+                runHscriptInstruction(instructionPointer, skipping, continuation);
+            } else {
+                instructions[instructionPointer](this, skipping, continuation);
+            }
+        });
 
         if (tryCallNextWithTailRecursion) {
             nextCalledWithTailRecursion = true;
@@ -291,6 +295,57 @@ class AsyncEmbeddedScript2 {
     }
 
     public var printCurrentInstruction = true;
+
+    public function runWithErrorChecking(process:Void->Void) {
+        try {
+            process();
+        } catch (e:haxe.Exception) {
+            Prelude.print("ERROR STACK:");
+            logStack(e.stack);
+            Prelude.print("ERROR MESSAGE:");
+            Prelude.printStr(e.message);
+            if (onError != null) {
+                onError(e);
+            }
+            #if (sys || hxnodejs)
+            Sys.exit(1);
+            #end
+            throw e;
+        }
+    }
+
+    function logStack(c:CallStack):Void {
+        var lastFilePos = "";
+        var consecutiveCalls = 0;
+        var nextFrame = null;
+
+        for (idx in 0... c.length) {
+            switch (nextFrame = c.get(idx)) {
+                case null:
+                    break;
+                case FilePos(s, file, line, column):
+                    var filePos = '${file}:${line}';
+                    if (column != null) filePos += ':${column}';
+
+                    if (filePos == lastFilePos) {
+                        ++consecutiveCalls;
+                    } else {
+                        if (lastFilePos.length > 0) {
+                            Prelude.print('${lastFilePos} x ${consecutiveCalls}');
+                        }
+                        consecutiveCalls = 1;
+                    }
+                    lastFilePos = filePos;
+                default:
+                    Prelude.print(nextFrame);
+            }
+        }
+        if (lastFilePos.length > 0) {
+            Prelude.print('${lastFilePos} x ${consecutiveCalls}');
+        }
+    }
+
+    public var onError:Any->Void;
 
     #if macro
     public static function build(dslHaxelib:String, dslFile:String, scriptFile:String):Array<Field> {
@@ -349,6 +404,18 @@ class AsyncEmbeddedScript2 {
                 default:
                     throw KissError.fromExp(wholeExp, "bad (label) statement");
             }
+        };
+
+        // Or if you're subclassing this before implementing your script, add this macro to the subclass dsl:
+        //  (defMacro makeCC [&body b]
+        //      `->:Void [] (runWithErrorChecking ->:Void {,@b}))
+
+        k.macros["makeCC"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            b.callSymbol("lambda", [b.list([]),
+                b.callSymbol("runWithErrorChecking", [
+                    b.callSymbol("lambda", [b.list([])].concat(args))
+                ])]);
         };
 
         if (dslHaxelib.length > 0) {
