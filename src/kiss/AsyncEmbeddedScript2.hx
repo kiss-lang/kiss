@@ -316,6 +316,7 @@ class AsyncEmbeddedScript2 {
 
     function logStack(c:CallStack):Void {
         var lastFilePos = "";
+        var lastS:StackItem = null;
         var consecutiveCalls = 0;
         var nextFrame = null;
 
@@ -331,17 +332,26 @@ class AsyncEmbeddedScript2 {
                         ++consecutiveCalls;
                     } else {
                         if (lastFilePos.length > 0) {
-                            Prelude.print('${lastFilePos} x ${consecutiveCalls}');
+                            var line = '${lastS} at ${lastFilePos}';
+                            if (consecutiveCalls > 1) {
+                                line += ' x${consecutiveCalls}';
+                            }
+                            Prelude.print(line);
                         }
                         consecutiveCalls = 1;
                     }
                     lastFilePos = filePos;
+                    lastS = s;
                 default:
                     Prelude.print(nextFrame);
             }
         }
         if (lastFilePos.length > 0) {
-            Prelude.print('${lastFilePos} x ${consecutiveCalls}');
+            var line = '${lastS} at ${lastFilePos}';
+            if (consecutiveCalls > 1) {
+                line += ' x${consecutiveCalls}';
+            }
+            Prelude.print(line);
         }
     }
 
