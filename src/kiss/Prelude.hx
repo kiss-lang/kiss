@@ -641,6 +641,16 @@ class Prelude {
         #else
 
         var buildHxml = Sys.getEnv("KISS_BUILD_HXML");
+        if (buildHxml == null) {
+            throw 'To convert kiss to hscript at runtime, clone kiss and set the KISS_BUILD_HXML environment variable.';
+        }
+        if (!buildHxml.endsWith("build.hxml")) {
+            throw 'KISS_BUILD_HXML is improperly set (${buildHxml})';
+        }
+        if (!FileSystem.exists(buildHxml)) {
+            throw 'KISS_BUILD_HXML does not exist (${buildHxml})';
+        }
+
         var cwd = Path.directory(buildHxml);
         #if macro
         return Kiss.measure("Prelude.convertToHScript", () -> {
