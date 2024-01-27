@@ -449,6 +449,10 @@ class BasicTestCase extends Test {
         _testSafeAccess();
     }
 
+    function testStreamRecording() {
+        _testStreamRecording();
+    }
+
     var aNullToPrint = null;
 }
 

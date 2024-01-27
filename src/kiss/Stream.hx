@@ -121,8 +121,8 @@ class Stream {
 
     var lineLengths = [];
 
-    /** Every drop call should end up calling dropChars() or the position tracker will be wrong. **/
-    public function dropChars(count:Int) {
+    /** Every drop call should end up calling dropChars() or the position tracker and recording will be wrong. **/
+    public function dropChars(count:Int, taking:Bool) {
         for (idx in 0...count) {
             switch (content.charAt(idx)) {
                 case "\n":
@@ -140,10 +140,32 @@ class Stream {
                     startOfLine = false;
             }
         }
+        
+        function record() {
+            recording += content.substr(0, count);
+        }
+
+        if (recordingType != Neither)
+            trace(recordingType);
+
+        switch (recordingType) {
+            case Both:
+                record();
+            case Take if (taking):
+                record();
+            case Drop if (!taking):
+                record();
+            default:
+        }
+        
         content = content.substr(count);
     }
 
     public function putBackString(s:String) {
+        // I don't know what should happen when putBackString() is used while recording. So for now, it is an error.
+        if (recordingType != Neither) {
+            error(this, "Undefined behavior: calling putBackString() while in the middle of recording a stream transaction");
+        }
         #if macro
         Kiss.measure("Stream.putBackString", () -> {
         #end
@@ -169,7 +191,7 @@ class Stream {
         if (count > content.length)
             return None;
         var toReturn = content.substr(0, count);
-        dropChars(count);
+        dropChars(count, true);
         return Some(toReturn);
     }
 
@@ -178,7 +200,7 @@ class Stream {
         if (toDrop != s) {
             error(this, 'Expected $s');
         }
-        dropChars(s.length);
+        dropChars(s.length, false);
     }
 
     public function dropStringIf(s:String):Bool {
@@ -191,12 +213,12 @@ class Stream {
     }
 
     public function dropUntil(s:String) {
-        dropChars(content.indexOf(s));
+        dropChars(content.indexOf(s), false);
     }
 
     public function dropWhitespace() {
         var trimmed = content.ltrim();
-        dropChars(content.length - trimmed.length);
+        dropChars(content.length - trimmed.length, false);
     }
 
     public function takeUntilOneOf(terminators:Array<String>, allowEOF:Bool = false):Option<String> {
@@ -239,7 +261,8 @@ class Stream {
         }
 
         var toReturn = content.substr(0, idx);
-        dropChars(toReturn.length + s.length);
+        dropChars(toReturn.length, true);
+        dropChars(s.length, false);
         return Some(toReturn);
     }
 
@@ -282,8 +305,12 @@ class Stream {
 
     public function takeRest():String {
         var toReturn = content;
-        dropChars(content.length);
+        dropChars(content.length, true);
         return toReturn;
+    }
+
+    public function dropRest() {
+        dropChars(content.length, false);
     }
 
     public function takeLine():Option<String> {
@@ -325,4 +352,31 @@ class Stream {
     public static function error(stream:Stream, message:String) {
         throw new StreamError(stream.position(), message);
     }
+
+    private var recordingType:StreamRecordType = Neither;
+    private var recording = "";
+    
+    public function recordTransaction(type:StreamRecordType = Both, transaction:Void->Void) {
+        if (type == Neither) {
+            error(this, "Tried to start recording a transaction that would always return an empty string");
+        }
+        if (recordingType != Neither) {
+            error(this, "Tried to start recording a transaction before finishing the current one");
+        }
+        recordingType = type;
+        recording = "";
+
+        transaction();
+
+        recordingType = Neither;
+
+        return recording;
+    }
+}
+
+enum StreamRecordType {
+    Neither;
+    Drop;
+    Take;
+    Both;
 }

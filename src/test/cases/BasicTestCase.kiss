@@ -964,3 +964,12 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (Assert.equals
         (Std.string ["Thing" "<" "Generic" ">" "->" "Thing"])
         (Std.string (Prelude.splitByAll "Thing<Generic>->Thing" [">" "<" "->"]))))
+
+(function _testStreamRecording []
+    (let [str "a b c d e f"
+            [stream1 stream2 stream3 stream4] (for i (range 4) (Stream.fromString str))]
+        (Assert.equals "" (stream1.recordTransaction Drop ->(stream1.takeRest)))
+        (Assert.equals "a b c d e f\n" (stream2.recordTransaction Take ->(stream2.takeRest)))
+        (Assert.equals "a b c d e f\n" (stream3.recordTransaction Drop ->(stream3.dropRest)))
+        (Assert.equals "a b c d e f\n" (stream4.recordTransaction Both ->(stream4.dropRest)))
+        ))

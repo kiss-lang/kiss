@@ -438,7 +438,7 @@ class Reader {
                     }
                     if (firstAfterDollar == "?") {
                         wrapInIf = true;
-                        stream.dropChars(1);
+                        stream.dropChars(1, true);
                     }
                     var interpExpression = assertRead(stream, k);
                     var b = interpExpression.expBuilder();
