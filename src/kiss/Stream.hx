@@ -263,6 +263,43 @@ class Stream {
         return Some(toReturn);
     }
 
+    public function dropWhileOneOf(options:Array<String>) {
+        _dropWhileOneOf(options, false);
+    }
+
+    public function takeWhileOneOf(options:Array<String>) {
+        return _dropWhileOneOf(options, true);
+    }
+
+    function _dropWhileOneOf(options:Array<String>, take:Bool):Option<String> {
+        var taken = "";
+
+        var lengths = [for (option in options) option.length => true];
+        var optsMap = [for (option in options) option => true];
+
+        var nextIs = false;
+        do {
+            nextIs = false;
+            for (length => _ in lengths) {
+                var sample = content.substr(0, length);
+                if (optsMap.exists(sample)) {
+                    nextIs = true;
+                    if (take) {
+                        taken += sample;
+                    }
+                    dropChars(length, take);
+                }
+            }
+
+        } while(nextIs);
+
+
+        if (taken.length == 0)
+            return None;
+
+        return Some(taken);
+    }
+
     // If the stream starts with the opening delimiter, return the text between it and the closing delimiter.
     // Allow either delimiter to appear immediately after escapeSeq,
     // otherwise throw if open occurs again before close, and end on finding close

@@ -971,5 +971,10 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (Assert.equals "" (stream1.recordTransaction Drop ->(stream1.takeRest)))
         (Assert.equals "a b c d e f\n" (stream2.recordTransaction Take ->(stream2.takeRest)))
         (Assert.equals "a b c d e f\n" (stream3.recordTransaction Drop ->(stream3.dropRest)))
-        (Assert.equals "a b c d e f\n" (stream4.recordTransaction Both ->(stream4.dropRest)))
-        ))
+        (Assert.equals "a b c d e f\n" (stream4.recordTransaction Both ->(stream4.dropRest)))))
+
+(function _testTakeWhileOneOf []
+    (let [stream (Stream.fromString " , , , ,abababababcab.ccab.")]
+        (Assert.equals " , , , ," (stream.expect "" ->(stream.takeWhileOneOf (.split ", " ""))))
+        (Assert.equals "ababababab" (stream.expect "" ->(stream.takeWhileOneOf (.split "ab" ""))))
+        (Assert.equals "cab.ccab" (stream.expect "" ->(stream.takeWhileOneOf ["cab" ".c"])))))
