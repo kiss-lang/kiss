@@ -372,7 +372,7 @@ class Stream {
         };
     }
 
-    public function expect(whatToExpect:String, f:Void->Option<String>):String {
+    public function expect(whatToExpect:String="something unspecified", f:Void->Option<String>):String {
         var position = position();
         switch (f()) {
             case Some(s):
