@@ -145,9 +145,6 @@ class Stream {
             recording += content.substr(0, count);
         }
 
-        if (recordingType != Neither)
-            trace(recordingType);
-
         switch (recordingType) {
             case Both:
                 record();
