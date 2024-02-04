@@ -76,13 +76,14 @@ class Helpers {
         return tokens.join("");
     }
 
-    public static function parseComplexType(path:String, k:KissState, ?from:ReaderExp, mustResolve=false):ComplexType {
-        path = replaceTypeAliases(path, k);
+    public static function parseComplexType(path:String, ?k:KissState, ?from:ReaderExp, mustResolve=false):ComplexType {
+        if (k != null)
+            path = replaceTypeAliases(path, k);
 
         // Trick Haxe into parsing it for us:
         var typeCheckStr = 'var thing:$path;';
         var errorMessage = 'Haxe could not parse a complex type from `$path` in `${typeCheckStr}`';
-        
+
         function throwError() {
             if (from == null) {
                 throw errorMessage;
