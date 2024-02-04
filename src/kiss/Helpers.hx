@@ -108,7 +108,7 @@ class Helpers {
                     Context.resolveType(t, pos);
                 } catch (e:Dynamic) {
                     errorMessage = 'Type not found: $path';
-                    throwError(); 
+                    throwError();
                 }
             }
             return t;
@@ -131,7 +131,7 @@ class Helpers {
 
     public static function explicitType(nameExp:ReaderExp, k:KissState):ComplexType {
         var string = explicitTypeString(nameExp, k);
-        if (string == null) return null; 
+        if (string == null) return null;
         return Helpers.parseComplexType(string, k, nameExp);
     }
 
@@ -508,7 +508,7 @@ class Helpers {
         });
     }
 
-    static var parser = new Parser(); 
+    static var parser = new Parser();
     static function compileTimeHScript(exp:ReaderExp, k:KissState) {
         var hscriptExp = mapForInterp(k.forMacroEval().convert(exp), k);
         var code = hscriptExp.toString(); // tink_macro to the rescue
@@ -526,7 +526,7 @@ class Helpers {
 
     public static function runAtCompileTimeDynamic(exp:ReaderExp, k:KissState, ?args:Map<String, Dynamic>):Dynamic {
         var parsed = compileTimeHScript(exp, k);
-        
+
         // The macro interpreter gets everything a KissInterp has,
         // plus macro-specific things.
         var interp = new KissInterp();
@@ -832,7 +832,7 @@ class Helpers {
             case null if (Std.isOfType(exp, Array)):
                 var expList = cast(exp, Array<Dynamic>);
                 var expDynamic:Dynamic = exp;
-                argList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty); 
+                argList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty);
             case ListExp([]) if (allowEmpty):
                 [];
             case ListExp([]) if (!allowEmpty):
@@ -851,7 +851,7 @@ class Helpers {
             case null if (Std.isOfType(exp, Array)):
                 var expList = cast(exp, Array<Dynamic>);
                 var expDynamic:Dynamic = exp;
-                bindingList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty); 
+                bindingList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty);
             case ListExp(bindingExps) if ((allowEmpty || bindingExps.length > 0) && bindingExps.length % 2 == 0):
                 bindingExps;
             default:
@@ -888,7 +888,7 @@ class Helpers {
 
                 // <libname>/<classPath...>
                 if (FileSystem.exists(Path.join([path, "haxelib.json"]))) return path;
-                
+
                 // <libname>/<version>/haxelib/<classPath...>
                 if (parts[matchingPartIndex + 2] == "haxelib") {
                     var haxelibPath = parts.slice(0, matchingPartIndex + 3).join("/");
