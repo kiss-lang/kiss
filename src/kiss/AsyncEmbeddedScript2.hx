@@ -30,10 +30,10 @@ typedef AsyncCommand2 = (AsyncEmbeddedScript2, Bool, Continuation2) -> Void;
 
 class ObjectInterp2<T> extends Interp {
     var obj:T;
-    var fields:Map<String,Bool> = []; 
+    var fields:Map<String,Bool> = [];
     public function new(obj:T) {
         this.obj = obj;
-        
+
         for (field in Type.getInstanceFields(Type.getClass(obj))) {
             fields[field] = true;
         }
@@ -59,7 +59,7 @@ class ObjectInterp2<T> extends Interp {
             super.setVar(name, v);
         }
     }
- 
+
 	public override function expr( e : hscript.Expr ) : Dynamic {
         var curExpr = e;
         #if hscriptPos
@@ -113,7 +113,7 @@ class AsyncEmbeddedScript2 {
         return interp.variables;
     }
 
-    private var hscriptInstructions:Map<Int,String> = [];    
+    private var hscriptInstructions:Map<Int,String> = [];
     private function hscriptInstructionFile() return "";
 
     public function setBreakHandler(handler:AsyncCommand2) {
@@ -146,7 +146,7 @@ class AsyncEmbeddedScript2 {
 
     private function resetInstructions() {}
 
-    public function instructionCount() { 
+    public function instructionCount() {
         if (instructions == null)
             resetInstructions();
         return instructions.length;
@@ -169,7 +169,7 @@ class AsyncEmbeddedScript2 {
     public var skipTarget(default, null):Null<Int> = null;
 
     public var running(default, null):Bool = false;
-    
+
     // There are two ways to keep the callstack unwound. The default is to use haxe.Timer.delay,
     // which is automatic, but might introduce frame-skippy behaviors. The alternative is to
     // set unwindWithTimerDelay to false, and use your own event loop to call ccToCall whenever
@@ -179,7 +179,7 @@ class AsyncEmbeddedScript2 {
 
     public var onSkipStart(default, null):Continuation2 = null;
     public var onSkipEnd(default, null):Continuation2 = null;
-        
+
     // When skipping, you might end up with hundreds of instructions running in a single frame.
     // This flag forces the skipped instructions to run one-per-frame so your program doesn't hang.
     public var skipAsync(default, null):Bool = false;
@@ -206,7 +206,7 @@ class AsyncEmbeddedScript2 {
                 skipping = true;
             }
         }
-        
+
         lastInstructionPointer = instructionPointer;
         if (instructions == null)
             resetInstructions();
@@ -284,7 +284,7 @@ class AsyncEmbeddedScript2 {
 
     public var lastLabel(default, null):String = "";
     private var potentialLastLabel:String = "";
-    
+
     // Will be called EVERY time a label is reached, even if skipping past it:
     public var onLabel:String->Void;
     // Will be called when labels are reached without skipping, AND on the last label skipped when skipping ends
@@ -396,12 +396,12 @@ class AsyncEmbeddedScript2 {
                 #end
                 case Symbol(label) | StrExp(label):
                     k.stateChanged = true;
-                
+
                     label = '${++labelNum}. '.lpad("0", 5) + label;
                     labelsList.push(macro labels[$v{label}] = $v{commandList.length});
-                    
+
                     var b = wholeExp.expBuilder();
-                    
+
                     b.begin([
                         b._if(b.symbol("skipping"),
                                 b.set(b.symbol("potentialLastLabel"), b.str(label)),
@@ -450,7 +450,7 @@ class AsyncEmbeddedScript2 {
         }
 
         scriptFile = Path.join([loadingDirectory, scriptFile]);
-        
+
         Context.registerModuleDependency(Context.getLocalModule(), scriptFile);
         k.fieldList = [];
         Kiss._try(() -> {
@@ -469,10 +469,10 @@ class AsyncEmbeddedScript2 {
 
                     nextExp = Kiss.macroExpand(nextExp, k);
                     var stateChanged = k.stateChanged;
-                    
+
                     // Allow packing multiple commands into one exp with a (commands <...>) statement
                     switch (nextExp.def) {
-                        case CallExp({pos: _, def: Symbol("commands")}, 
+                        case CallExp({pos: _, def: Symbol("commands")},
                         commands):
                             for (exp in commands) {
                                 process(exp);

@@ -26,7 +26,7 @@ class DSLTestCase extends Test {
         Assert.isFalse(script.ranHscriptInstruction);
         Assert.isTrue(script.wholeScriptDone);
     }
-    
+
     #if (sys || hxnodejs)
     function testAsyncFromCache() {
         var script = new AsyncDSLScriptThatWillCache();
