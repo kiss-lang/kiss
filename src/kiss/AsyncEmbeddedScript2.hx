@@ -4,6 +4,7 @@ package kiss;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.macro.PositionTools;
+using haxe.macro.ExprTools;
 import sys.io.File;
 import haxe.io.Path;
 using haxe.io.Path;
@@ -102,6 +103,8 @@ class AsyncEmbeddedScript2 {
     private var onBreak:AsyncCommand2 = null;
     public var lastInstructionPointer(default,null):Int = -1;
     private var labels:Map<String,Int> = [];
+
+    public var autoCC(default,default):Bool = true;
 
     private var parser = new Parser();
     private var interp:ObjectInterp2<AsyncEmbeddedScript2>;
@@ -477,12 +480,35 @@ class AsyncEmbeddedScript2 {
                             return;
                         default:
                     }
-                    
+
                     var exprString = Reader.toString(nextExp.def);
                     var fieldCount = k.fieldList.length;
                     var expr = Kiss.readerExpToHaxeExpr(nextExp, k);
                     if (expr == null || Kiss.isEmpty(expr))
                         return;
+
+                    // Detect whether the scripter forgot to reference cc. If they did, insert a cc call.
+                    var referencesCC = false;
+
+                    function checkSubExps(exp: Expr) {
+                        switch (exp.expr) {
+                            case EConst(CIdent("cc")):
+                                referencesCC = true;
+                            default:
+                                exp.iter(checkSubExps);
+                        }
+                    }
+                    expr.iter(checkSubExps);
+
+                    if (!referencesCC) {
+                        expr = macro {
+                            $expr;
+                            if (autoCC) {
+                                cc();
+                            }
+                        };
+                    }
+
                     expr = macro { if (printCurrentInstruction) Prelude.print($v{exprString}); $expr; };
                     expr = expr.expr.withMacroPosOf(nextExp);
                     if (expr != null) {

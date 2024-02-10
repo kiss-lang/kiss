@@ -4,6 +4,7 @@ import utest.Test;
 import utest.Assert;
 import kiss.EmbeddedScript;
 import kiss.AsyncEmbeddedScript;
+import kiss.AsyncEmbeddedScript2;
 import kiss.Prelude;
 import kiss.FuzzyMap;
 import kiss.FuzzyMapTools;
@@ -38,6 +39,18 @@ class DSLTestCase extends Test {
         Assert.isTrue(script2.wholeScriptDone);
     }
     #end
+
+    function testAsyncAutoCC() {
+        var scriptWithAutoCC = new AsyncDSLScriptWithAutoCC();
+        var scriptWithoutAutoCC = new AsyncDSLScriptWithAutoCC();
+        scriptWithoutAutoCC.autoCC = false;
+
+        scriptWithAutoCC.run();
+        scriptWithoutAutoCC.run();
+
+        Assert.isTrue(scriptWithAutoCC.finished);
+        Assert.isFalse(scriptWithoutAutoCC.finished);
+    }
 }
 
 @:build(kiss.EmbeddedScript.build("DSL.kiss", "DSLScript.dsl"))
@@ -54,3 +67,8 @@ class AsyncDSLScriptThatWillCache extends AsyncEmbeddedScript {}
 
 @:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
 class AsyncDSLScriptThatWillCache2 extends AsyncEmbeddedScript {}
+
+// Auto-call cc when the scripter forgets to:
+
+@:build(kiss.AsyncEmbeddedScript2.build("", "DSL.kiss", "AsyncDSLScriptWithAutoCC.dsl"))
+class AsyncDSLScriptWithAutoCC extends AsyncEmbeddedScript2 {}
