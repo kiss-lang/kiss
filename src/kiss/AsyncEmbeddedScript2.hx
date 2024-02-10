@@ -102,8 +102,7 @@ class AsyncEmbeddedScript2 {
     private var onBreak:AsyncCommand2 = null;
     public var lastInstructionPointer(default,null):Int = -1;
     private var labels:Map<String,Int> = [];
-    private var noSkipInstructions:Map<Int,Bool> = [];
-    
+
     private var parser = new Parser();
     private var interp:ObjectInterp2<AsyncEmbeddedScript2>;
     public var interpVariables(get, null):Map<String,Dynamic>;
@@ -382,7 +381,6 @@ class AsyncEmbeddedScript2 {
 
         var commandList:Array<Expr> = [];
         var labelsList:Array<Expr> = [];
-        var noSkipList:Array<Expr> = [];
 
         var labelNum = 0;
         k.macros["label"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
@@ -528,7 +526,6 @@ class AsyncEmbeddedScript2 {
                 expr: macro {
                     this.instructions = [$a{commandList}];
                     $b{labelsList};
-                    $b{noSkipList};
                 }
             })
         });
