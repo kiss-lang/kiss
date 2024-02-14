@@ -261,7 +261,7 @@ class Kiss {
             line: lineNumber,
             column: column
         };
-        
+
         return _try(() -> {
             var exp = null;
             var stream = Stream.fromString(kissCode, pos);
@@ -292,7 +292,7 @@ class Kiss {
                         k.addVarInScope(v, false, field.access.indexOf(AStatic) != -1);
                     default:
                 }
-                
+
             }
         }
     }
@@ -379,7 +379,7 @@ class Kiss {
         } else {
             Path.join([loadingDirectory, kissFile]);
         };
-        
+
         var module = Context.getLocalModule();
         if (module.length > 0)
             Context.registerModuleDependency(module, fullPath);
@@ -410,12 +410,12 @@ class Kiss {
             // readerExpToHaxeExpr must be called to process readermacro, alias, and macro definitions
             macroUsed = false;
             var expr = readerExpToHaxeExpr(nextExp, k);
-            
+
             // exps in the loaded file that actually become haxe expressions can be inserted into the
             // file that loaded them at the position (load) was called.
             // conditional compiler macros like (#when) tend to return empty blocks, or blocks containing empty blocks
             // when they contain field forms, so this should also be ignored
-            
+
             // When calling from build(), we can't add all expressions to the (begin) returned by (load), because that will
             // cause double-evaluation of field forms
             if (loadAllExps) {
@@ -457,14 +457,14 @@ class Kiss {
     }
 
     static var macroUsed = false;
-    
+
     #if kissCache
     @:persistent
     static var expCache:Map<String,Expr> = null;
 
     static var cacheThreshold = 0.05;
     #end
-    
+
     public static function readerExpToHaxeExpr(exp, k): Expr {
         return switch (macroExpandAndConvert(exp, k, false)) {
             case Right(expr): expr;
@@ -487,16 +487,16 @@ class Kiss {
             if (expCache == null) {
                 expCache = new Map();
             }
-            
+
             if (expCache.exists(str)) {
                 return Right(expCache[str]);
             }
         }
         #end
-        
+
         if (k.conversionStack.length == 0) k.stateChanged = false;
         k.conversionStack.push(exp);
-        
+
         var macros = k.macros;
         var fieldForms = k.fieldForms;
         var specialForms = k.specialForms;
@@ -518,7 +518,7 @@ class Kiss {
                 default: throw "macroExpandAndConvert is broken";
             };
         }
-        
+
         function leftForEach(convertedExps:Array<Either<ReaderExp,Expr>>) {
             return convertedExps.map(left);
         }
@@ -558,7 +558,7 @@ class Kiss {
                     else
                         metaParams.push([for (param in params) right(macroExpandAndConvert(param, k, false))]);
                     metaPos.push(Helpers.macroPos(exp));
-                    Right(right(macroExpandAndConvert(exp, k, false, metaNames, metaParams, metaPos)));                    
+                    Right(right(macroExpandAndConvert(exp, k, false, metaNames, metaParams, metaPos)));
                 }
             case Symbol(alias) if (k.identAliases.exists(alias)):
                 var substitution = k.identAliases[alias].withPosOf(exp);
@@ -613,7 +613,7 @@ class Kiss {
                         Right(none);
                     };
             case CallExp({pos: _, def: Symbol(specialForm)}, args) if (specialForms.exists(specialForm) && !macroExpandOnly):
-                checkNumArgs(specialForm);    
+                checkNumArgs(specialForm);
                 Right(Kiss.measure(specialForm, ()->specialForms[specialForm](exp, args.copy(), k), true));
             case CallExp({pos: _, def: Symbol(alias)}, args) if (k.callAliases.exists(alias)):
                 convert(CallExp(k.callAliases[alias].withPosOf(exp), args).withPosOf(exp));
@@ -705,7 +705,7 @@ class Kiss {
         }
         return expr;
     }
-    
+
     public static function addVarInScope(k: KissState, v:Var, local:Bool, isStatic:Bool=false) {
         if (v.type != null)
             k.typeHints.push(v);
@@ -783,7 +783,7 @@ class Kiss {
         };
 
         // TODO should this also be in forHScript()?
-        // In macro evaluation,  
+        // In macro evaluation,
         copy.macros.remove("eval");
         // BECAUSE it is provided as a function instead.
 
