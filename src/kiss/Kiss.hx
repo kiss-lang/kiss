@@ -498,6 +498,7 @@ class Kiss {
             Context.registerModuleDependency(module, fullPath);
 
         var previousFile = k.file;
+        var isNested = previousFile != null;
         k.file = fullPath;
 
         if (k.loadedFiles.exists(fullPath)) {
@@ -541,7 +542,7 @@ class Kiss {
                     loadedExps.push(nextExp);
                 }
             }
-        });
+        }, isNested);
 
         var exp = if (loadedExps.length > 0) {
             CallExp(Symbol("begin").withPos(startPosition), loadedExps).withPos(startPosition);

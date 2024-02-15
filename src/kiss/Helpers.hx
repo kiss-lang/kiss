@@ -530,8 +530,8 @@ class Helpers {
         // The macro interpreter gets everything a KissInterp has,
         // plus macro-specific things.
         var interp = new KissInterp();
-        interp.variables.set("read", Reader.assertRead.bind(_, k));
-        interp.variables.set("readExpArray", Reader.readExpArray.bind(_, _, k));
+        interp.variables.set("read", Reader._assertRead.bind(_, k));
+        interp.variables.set("readExpArray", Reader._readExpArray.bind(_, _, k));
         interp.variables.set("ReaderExp", ReaderExpDef);
         interp.variables.set("nextToken", Reader.nextToken.bind(_, "a token"));
         interp.variables.set("printExp", printExp);

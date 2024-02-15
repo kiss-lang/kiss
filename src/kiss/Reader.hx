@@ -23,6 +23,7 @@ class UnmatchedBracketSignal {
 typedef ReadFunction = (Stream, KissState) -> Null<ReaderExpDef>;
 typedef ReadTable = Map<String, ReadFunction>;
 
+@:allow(kiss.Helpers)
 class Reader {
     // The built-in readtable
     public static function builtins() {
@@ -292,6 +293,7 @@ class Reader {
     }
 
     public static function read(stream:Stream, k:KissState):Option<ReaderExp> {
+        assertNoPriorState(stream);
         return _read(stream, k);
     }
 
@@ -323,7 +325,22 @@ class Reader {
         }
     }
 
+    static var nestedReadExpArrayStartPositions = [];
+    static var readExpArrayStartPositions = [];
+
+    static function currentReadExpArrayStart() {
+        return readExpArrayStartPositions[readExpArrayStartPositions.length - 1];
+    }
+
+    static function assertNoPriorState(stream) {
+        if (readExpArrayStartPositions.length != 0) {
+            trace(readExpArrayStartPositions);
+            throw new StreamError(stream.position(), "Prior readExpArray() state is remaining in Reader");
+        }
+    }
+
     public static function readExpArray(stream:Stream, end:String, k:KissState, allowEof=false, startingPos=null):Array<ReaderExp> {
+        assertNoPriorState(stream);
         return _readExpArray(stream, end, k, allowEof, startingPos);
     }
 
@@ -331,6 +348,9 @@ class Reader {
         var array = [];
         if (startingPos == null)
             startingPos = stream.position();
+
+        readExpArrayStartPositions.push(startingPos);
+
         while (!stream.startsWith(end)) {
             stream.dropWhitespace();
             if (!stream.startsWith(end)) {
@@ -339,7 +359,7 @@ class Reader {
                         case Some(exp):
                             array.push(exp);
                         case None:
-                            if (allowEof) { return array; }
+                            if (allowEof) { readExpArrayStartPositions.pop(); return array; }
                             else throw new StreamError(startingPos, 'Ran out of expressions before $end was found.');
                     }
                 } catch (s:UnmatchedBracketSignal) {
@@ -354,6 +374,7 @@ class Reader {
             }
         }
         stream.dropString(end);
+        readExpArrayStartPositions.pop();
         return array;
     }
 
@@ -361,7 +382,13 @@ class Reader {
         Read all the expressions in the given stream, processing them one by one while reading.
         They can't be read all at once because some expressions change the Readtable state
     **/
-    public static function readAndProcess(stream:Stream, k:KissState, process:(ReaderExp) -> Void) {
+    public static function readAndProcess(stream:Stream, k:KissState, process:(ReaderExp) -> Void, nested = false) {
+        if (nested) {
+            nestedReadExpArrayStartPositions.push(readExpArrayStartPositions);
+            readExpArrayStartPositions = [];
+        } else {
+            assertNoPriorState(stream);
+        }
         for (key => func in k.startOfFileReadTable) {
             if (stream.startsWith(key)) {
                 var pos = stream.position();
@@ -397,6 +424,14 @@ class Reader {
                 case None:
                     stream.dropWhitespace(); // If there was a comment, drop whitespace that comes after
             }
+        }
+
+        if (readExpArrayStartPositions.length != 0) {
+            throw new StreamError(stream.position(), "readExpArray() state is remaining in Reader after readAndProcess()");
+        }
+
+        if (nested) {
+            readExpArrayStartPositions = nestedReadExpArrayStartPositions.pop();
         }
     }
 
