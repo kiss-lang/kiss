@@ -1,0 +1,77 @@
+(defMacro addSkips [flxMovieClass]
+    `{
+        (method &override :Void prepareForSkip []
+            (print "prepareForSkip override called")
+            // TODO these things could/should all be in HollywooDSL:
+            (kiss_tools.TimerWithPause.stopAll)
+            (flxDirector.pause)
+            (.clear (director.shortcutHandler))
+            (flxDirector.cleanup)
+            (cond
+                (~didLoading
+                    (set skipMovie (new ,flxMovieClass flxDirector))
+                    (skipMovie.scavengeObjects this)
+                    (doCleanup))
+                (true
+                    (set skipMovie ~this)))
+
+        (preload
+            (unless (FlxG.inputs.list.contains flxDirector.actionManager)
+                (FlxG.inputs.add flxDirector.actionManager))
+
+            (set onCommitLabel ->:Void label {
+                (FlxDirector.lastSceneForMovie this label)
+            }))
+
+        (cleanup
+            (when skipMovie?.running
+                (callPrivate skipMovie "doCleanup")))
+
+        (cleanup
+            (set tweens [])
+            (set flxDirector.nextCC null)
+            (loopingSoundPlays.clear)
+            (destroyAndClear actors)
+            (destroyAndClear props)
+            (destroyAndClear sets)
+            (destroyAndClear sounds)
+            (destroyAndClear voiceTracks)
+            (destroyAndClear songs)
+            (when (flixel.FlxG.cameras.list.contains uiCamera)
+                (flixel.FlxG.cameras.remove uiCamera true))
+            (when (flixel.FlxG.cameras.list.contains screenCamera)
+                (flixel.FlxG.cameras.remove screenCamera true))
+
+            // I hope this disposes of references to actors, props, sets, etc.:
+            (scenes.clear)
+
+            (propScales.m.clear)
+            (propsInScene.clear)
+            (overlaidPropsInScenes.clear)
+            (doFor m tweenedPositionsOfSpritesInScenes
+                (doFor p m
+                    (p.put))
+                (m.clear))
+            (tweenedPositionsOfSpritesInScenes.clear)
+
+            (doFor =>key lightSourceList lightSources
+                (whileLet [lightSource (lightSourceList.elements.pop)]
+                    (lightSource.destroy)))
+
+            (#when cpp
+                (cpp.vm.Gc.run true)
+                (cpp.vm.Gc.compact)))
+
+        (#when debug
+            (preload
+                (.registerItem (director.shortcutHandler) "[n]ext label"
+                                ->cc {
+                                    (prepareForSkip)
+                                    (runFromNextLabel skipMovie)
+                                })
+
+
+                (.registerItem (director.shortcutHandler) "skip to [l]abel"
+                                ->cc
+                                    (flxDirector.sceneSelection ->:Void {}))))
+    })
