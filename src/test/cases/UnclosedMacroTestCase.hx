@@ -15,10 +15,6 @@ using StringTools;
 
 @:build(kiss.Kiss.buildExpectingError(kiss.EType.EStream('Ran out of expressions before ) was found.')))
 class UnclosedMacroTestCase extends Test {
-    function testSplitByAll() {
-        Assert.pass();
-    }
-
     function testExpectedError() {
         _testExpectedError();
     }
