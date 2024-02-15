@@ -17,7 +17,9 @@ import kiss.Macros;
 import kiss.KissError;
 import kiss.cloner.Cloner;
 import tink.syntaxhub.*;
+import tink.macro.Exprs;
 import haxe.ds.Either;
+import kiss.EType;
 
 using kiss.Kiss;
 using kiss.Helpers;
@@ -218,29 +220,73 @@ class Kiss {
         return k;
     }
 
-    public static function _try<T>(operation:() -> T):Null<T> {
+    public static function _try<T>(operation:() -> T, ?expectedError:EType):Null<T> {
         #if !macrotest
         try {
         #end
             return operation();
         #if !macrotest
         } catch (err:StreamError) {
-            Sys.stderr().writeString(err + "\n");
-            Sys.exit(1);
-            return null;
+            function printErr() {
+                Sys.stderr().writeString(err + "\n");
+            }
+            switch (expectedError) {
+                case EStream(message) if (message == err.message):
+                    throw EExpected(expectedError);
+                case null:
+                    printErr();
+                    Sys.exit(1);
+                    return null;
+                default:
+                    printErr();
+                    throw EUnexpected(err);
+            }
         } catch (err:KissError) {
-            Sys.stderr().writeString(err + "\n");
-            Sys.exit(1);
-            return null;
+            function printErr() {
+                Sys.stderr().writeString(err + "\n");
+            }
+            switch (expectedError) {
+                case EKiss(message) if (message == err.message):
+                    throw EExpected(expectedError);
+                case null:
+                    printErr();
+                    Sys.exit(1);
+                    return null;
+                default:
+                    printErr();
+                    throw EUnexpected(err);
+            }
         } catch (err:UnmatchedBracketSignal) {
-            Sys.stderr().writeString(Stream.toPrint(err.position) + ': Unmatched ${err.type}\n');
-            Sys.exit(1);
-            return null;
+            function printErr() {
+                Sys.stderr().writeString(Stream.toPrint(err.position) + ': Unmatched ${err.type}\n');
+            }
+            switch (expectedError) {
+                case EUnmatchedBracket(type) if (type == err.type):
+                    throw EExpected(expectedError);
+                case null:
+                    printErr();
+                    Sys.exit(1);
+                    return null;
+                default:
+                    printErr();
+                    throw EUnexpected(err);
+            }
         } catch (err:Exception) {
-            Sys.stderr().writeString("Error: " + err.message + "\n");
-            Sys.stderr().writeString(err.stack.toString() + "\n");
-            Sys.exit(1);
-            return null;
+            function printErr() {
+                Sys.stderr().writeString("Error: " + err.message + "\n");
+                Sys.stderr().writeString(err.stack.toString() + "\n");
+            }
+            switch (expectedError) {
+                case EException(message) if (message == err.message):
+                    throw EExpected(expectedError);
+                case null:
+                    printErr();
+                    Sys.exit(1);
+                    return null;
+                default:
+                    printErr();
+                    throw EUnexpected(err);
+            }
         }
         #end
     }
@@ -297,10 +343,77 @@ class Kiss {
         }
     }
 
+    // This is only for testing:
+    public static function buildExpectingError(expectedError:ExprOf<EType>, ?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext):Array<Field> {
+        var buildFields = Context.getBuildFields();
+        var hasTestExpectedError = false;
+        for (field in buildFields) {
+            switch (field) {
+                case {
+                    name: "testExpectedError",
+                    kind: FFun({
+                        params: [],
+                        expr: {
+                            expr: EBlock([{expr: ECall({expr: EConst(CIdent("_testExpectedError"))}, [])}])
+                        }
+                    })
+                }:
+                    hasTestExpectedError = true;
+                default:
+            }
+        }
+        if (!hasTestExpectedError) {
+            throw "When building with Kiss.buildExpectingError(), you must add this Haxe function: " +
+                "function testExpectedError() { _testExpectedError(); }";
+        }
+
+        var expectedError = Exprs.eval(expectedError);
+        var s = Std.string(expectedError);
+
+        try {
+            build(kissFile, k, useClassFields, context, expectedError);
+
+            // Build success, which is bad:
+            buildFields.push({
+                pos: Context.currentPos(),
+                name: "_testExpectedError",
+                kind: FFun({
+                    args: [],
+                    expr: macro utest.Assert.fail('Build succeeded when an error was expected: ' + $v{s})
+                })
+            });
+        } catch (e:EType) {
+            switch (e) {
+                case EExpected(e):
+                    buildFields.push({
+                        pos: Context.currentPos(),
+                        name: "_testExpectedError",
+                        kind: FFun({
+                            args: [],
+                            expr: macro utest.Assert.pass()
+                        })
+                    });
+                case EUnexpected(e):
+                    buildFields.push({
+                        pos: Context.currentPos(),
+                        name: "_testExpectedError",
+                        kind: FFun({
+                            args: [],
+                            expr: macro utest.Assert.fail('Build failed in an unexpected way. Expected: ' + $v{s})
+                        })
+                    });
+                default:
+                    throw "unexpected error is neither expected nor unexpected ¯\\_(ツ)_/¯";
+            }
+        }
+
+        return buildFields;
+    }
+
     /**
         Build macro: add fields to a class from a corresponding .kiss file
     **/
-    public static function build(?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext):Array<Field> {
+    public static function build(?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext, ?expectedError:EType):Array<Field> {
 
         var classPath = Context.getPosInfos(Context.currentPos()).file;
         // (load... ) relative to the original file
@@ -364,7 +477,7 @@ class Kiss {
 
             #end
             k.fieldList;
-        });
+        }, expectedError);
         return result;
     }
 

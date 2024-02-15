@@ -18,7 +18,7 @@ typedef Position = {
 
 class StreamError {
     var position:Position;
-    var message:String;
+    public var message(default,null):String;
 
     public function new(position:Position, message:String) {
         this.position = position;
@@ -54,7 +54,7 @@ class Stream {
         var file = "string";
         if (position != null) {
             file = position.file;
-        } 
+        }
         var s = new Stream(file, content);
         if (position != null) {
             s.line = position.line;
@@ -140,7 +140,7 @@ class Stream {
                     startOfLine = false;
             }
         }
-        
+
         function record() {
             recording += content.substr(0, count);
         }
@@ -154,7 +154,7 @@ class Stream {
                 record();
             default:
         }
-        
+
         content = content.substr(count);
     }
 
@@ -389,7 +389,7 @@ class Stream {
 
     private var recordingType:StreamRecordType = Neither;
     private var recording = "";
-    
+
     public function recordTransaction(type:StreamRecordType = Both, transaction:Void->Void) {
         if (type == Neither) {
             error(this, "Tried to start recording a transaction that would always return an empty string");

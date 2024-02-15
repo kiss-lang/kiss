@@ -15,7 +15,7 @@ enum ErrorType {
 // Internal Kiss errors
 class KissError {
     var exps:List<ReaderExp>;
-    var message:String;
+    public var message(default, null):String;
 
     public function new(exps:Array<ReaderExp>, message:String) {
         this.exps = exps;
