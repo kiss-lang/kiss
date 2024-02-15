@@ -327,14 +327,17 @@ class Reader {
                         case Some(exp):
                             array.push(exp);
                         case None:
-                            if (allowEof) return array;
+                            if (allowEof) { return array; }
                             else throw new StreamError(startingPos, 'Ran out of expressions before $end was found.');
                     }
                 } catch (s:UnmatchedBracketSignal) {
-                    if (s.type == end)
+                    if (s.type == end) {
                         break;
-                    else
+                    }
+                    else {
+
                         throw s;
+                    }
                 }
             }
         }
