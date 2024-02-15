@@ -13,10 +13,12 @@ using StringTools;
 class UnmatchedBracketSignal {
     public var type:String;
     public var position:Stream.Position;
+    public var lastReadExpArrayStartPosition:Stream.Position;
 
-    public function new(type, position) {
+    public function new(type, position, ?lastReadArrayStartPosition) {
         this.type = type;
         this.position = position;
+        this.lastReadExpArrayStartPosition = lastReadArrayStartPosition;
     }
 }
 
@@ -123,7 +125,7 @@ class Reader {
         function unmatchedBracket(b:String) {
             readTable[b] = (stream:Stream, k) -> {
                 stream.putBackString(b);
-                throw new UnmatchedBracketSignal(b, stream.position());
+                throw new UnmatchedBracketSignal(b, stream.position(), currentReadExpArrayStart());
             };
         }
 
@@ -332,9 +334,15 @@ class Reader {
         return readExpArrayStartPositions[readExpArrayStartPositions.length - 1];
     }
 
+    static var nestedReadExpArrayEndings = [];
+    static var readExpArrayEndings = [];
+
+    static function currentReadExpArrayEnding() {
+        return readExpArrayEndings[readExpArrayEndings.length - 1];
+    }
+
     static function assertNoPriorState(stream) {
         if (readExpArrayStartPositions.length != 0) {
-            trace(readExpArrayStartPositions);
             throw new StreamError(stream.position(), "Prior readExpArray() state is remaining in Reader");
         }
     }
@@ -350,6 +358,7 @@ class Reader {
             startingPos = stream.position();
 
         readExpArrayStartPositions.push(startingPos);
+        readExpArrayEndings.push(end);
 
         while (!stream.startsWith(end)) {
             stream.dropWhitespace();
@@ -359,15 +368,19 @@ class Reader {
                         case Some(exp):
                             array.push(exp);
                         case None:
-                            if (allowEof) { readExpArrayStartPositions.pop(); return array; }
+                            if (allowEof) {
+                                readExpArrayStartPositions.pop();
+                                readExpArrayEndings.pop();
+                                return array;
+                            }
                             else throw new StreamError(startingPos, 'Ran out of expressions before $end was found.');
                     }
                 } catch (s:UnmatchedBracketSignal) {
-                    if (s.type == end) {
+                    if (s.type == end && s.lastReadExpArrayStartPosition == currentReadExpArrayStart()) {
                         break;
                     }
                     else {
-
+                        readExpArrayStartPositions.pop();
                         throw s;
                     }
                 }
@@ -375,6 +388,7 @@ class Reader {
         }
         stream.dropString(end);
         readExpArrayStartPositions.pop();
+        readExpArrayEndings.pop();
         return array;
     }
 

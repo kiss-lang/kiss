@@ -13,7 +13,7 @@ import js.lib.Promise;
 
 using StringTools;
 
-@:build(kiss.Kiss.buildExpectingError(kiss.EType.EStream('Ran out of expressions before ) was found.')))
+@:build(kiss.Kiss.buildExpectingError(kiss.EType.EUnmatchedBracket("}")))
 class UnclosedFunctionTestCase extends Test {
     function testExpectedError() {
         _testExpectedError();
