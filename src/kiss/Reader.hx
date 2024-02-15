@@ -278,13 +278,13 @@ class Reader {
         };
     }
 
-    static function chooseReadFunction(stream:Stream, readTable:ReadTable):Null<ReadFunction> {
+    static function chooseReadFunction(stream:Stream, readTable:ReadTable, eof = false):Null<ReadFunction> {
         var readTableKeys = [for (key in readTable.keys()) key];
         readTableKeys.sort((a, b) -> b.length - a.length);
 
         for (key in readTableKeys) {
             switch (stream.peekChars(key.length)) {
-                case Some(ky) if (ky == key):
+                case Some(ky) if (ky == key && (!eof || stream.content == ky)):
                     stream.dropString(key);
                     return readTable[key];
                 default:
@@ -403,28 +403,24 @@ class Reader {
         } else {
             assertNoPriorState(stream);
         }
-        for (key => func in k.startOfFileReadTable) {
-            if (stream.startsWith(key)) {
-                var pos = stream.position();
-                stream.dropString(key);
-                var v = func(stream, k);
-                if (v != null)
-                    process(v.withPos(pos));
-                break;
-            }
+
+        var startOfFileMacro = chooseReadFunction(stream, k.startOfFileReadTable);
+        if (startOfFileMacro != null) {
+            var pos = stream.position();
+            var v = startOfFileMacro(stream, k);
+            if (v != null)
+                process(v.withPos(pos));
         }
 
         while (true) {
             stream.dropWhitespace();
-            for (key => func in k.endOfFileReadTable) {
-                if (stream.content == key) {
-                    var pos = stream.position();
-                    stream.dropString(key);
-                    var v = func(stream, k);
-                    if (v != null)
-                        process(v.withPos(pos));
-                    break;
-                }
+
+            var endOfFileMacro = chooseReadFunction(stream, k.endOfFileReadTable, true);
+            if (endOfFileMacro != null) {
+                var pos = stream.position();
+                var v = endOfFileMacro(stream, k);
+                if (v != null)
+                    process(v.withPos(pos));
             }
 
             if (stream.isEmpty())
