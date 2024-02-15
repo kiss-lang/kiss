@@ -30,21 +30,21 @@ class Reader {
 
         readTable["("] = (stream, k) -> {
             var pos = stream.position();
-            CallExp(assertRead(stream, k), readExpArray(stream, ")", k, pos));
+            CallExp(_assertRead(stream, k), _readExpArray(stream, ")", k, pos));
         };
 
-        readTable["@"] = (stream, k) -> HaxeMeta(nextToken(stream, "a haxe metadata entry name"), null, assertRead(stream, k));
-        readTable["@("] = (stream, k) -> HaxeMeta(nextToken(stream, "a haxe metadata entry name"), readExpArray(stream, ")", k), assertRead(stream, k));
+        readTable["@"] = (stream, k) -> HaxeMeta(nextToken(stream, "a haxe metadata entry name"), null, _assertRead(stream, k));
+        readTable["@("] = (stream, k) -> HaxeMeta(nextToken(stream, "a haxe metadata entry name"), _readExpArray(stream, ")", k), _assertRead(stream, k));
 
-        readTable["["] = (stream, k) -> ListExp(readExpArray(stream, "]", k));
-        readTable["[::"] = (stream, k) -> ListEatingExp(readExpArray(stream, "]", k));
+        readTable["["] = (stream, k) -> ListExp(_readExpArray(stream, "]", k));
+        readTable["[::"] = (stream, k) -> ListEatingExp(_readExpArray(stream, "]", k));
         readTable["..."] = (stream, k) -> ListRestExp(nextToken(stream, "name for list-eating rest exp", true));
 
         // Provides a nice syntactic sugar for (if... {<then block...>} {<else block...>}),
         // and also handles string interpolation cases like "${exp}moreString":
-        readTable["{"] = (stream:Stream, k) -> CallExp(Symbol("begin").withPos(stream.position()), readExpArray(stream, "}", k));
+        readTable["{"] = (stream:Stream, k) -> CallExp(Symbol("begin").withPos(stream.position()), _readExpArray(stream, "}", k));
 
-        readTable["<>["] = (stream, k) -> TypeParams(readExpArray(stream, "]", k));
+        readTable["<>["] = (stream, k) -> TypeParams(_readExpArray(stream, "]", k));
 
         readTable['"'] = readString.bind(_, _, false);
         readTable["#"] = readRawString;
@@ -71,12 +71,12 @@ class Reader {
         };
         // Special comment syntax that disables the next whole reader expression:
         readTable["**"] = (stream:Stream, k) -> {
-            assertRead(stream, k);
+            _assertRead(stream, k);
             null;
         };
 
         readTable["'"] = (stream:Stream, k) -> {
-            CallExp(Symbol("quote").withPos(stream.position()), [assertRead(stream, k)]);
+            CallExp(Symbol("quote").withPos(stream.position()), [_assertRead(stream, k)]);
         };
 
         readTable["#|"] = (stream:Stream, k) -> {
@@ -94,30 +94,30 @@ class Reader {
             RawHaxeBlock(stream.expect("closing }#", () -> stream.takeUntilAndDrop("}#")));
         };
 
-        readTable[":"] = (stream:Stream, k) -> TypedExp(stream.expect("a type path", () -> stream.takeUntilOneOf(whitespace)), assertRead(stream, k));
+        readTable[":"] = (stream:Stream, k) -> TypedExp(stream.expect("a type path", () -> stream.takeUntilOneOf(whitespace)), _assertRead(stream, k));
 
-        readTable["&"] = (stream:Stream, k) -> MetaExp(nextToken(stream, "a meta symbol like mut, optional, rest"), assertRead(stream, k));
+        readTable["&"] = (stream:Stream, k) -> MetaExp(nextToken(stream, "a meta symbol like mut, optional, rest"), _assertRead(stream, k));
 
-        readTable["!"] = (stream:Stream, k) -> CallExp(Symbol("not").withPos(stream.position()), [assertRead(stream, k)]);
+        readTable["!"] = (stream:Stream, k) -> CallExp(Symbol("not").withPos(stream.position()), [_assertRead(stream, k)]);
 
         // Helpful for quickly debugging an expression by printing the value:
         readTable["~"] = (stream:Stream, k) -> {
             var pos = stream.position();
-            var expToPrint = assertRead(stream, k);
+            var expToPrint = _assertRead(stream, k);
             var expToPrintRepresentation = StrExp(Reader.toString(expToPrint.def)).withPos(pos);
             CallExp(Symbol("print").withPos(pos), [expToPrint, expToPrintRepresentation]);
         }
 
         // Helpful for defining predicates to pass to Haxe functions:
-        readTable["?"] = (stream:Stream, k) -> CallExp(Symbol("Prelude.truthy").withPos(stream.position()), [assertRead(stream, k)]);
+        readTable["?"] = (stream:Stream, k) -> CallExp(Symbol("Prelude.truthy").withPos(stream.position()), [_assertRead(stream, k)]);
 
         // Lets you dot-access a function result without binding it to a name
-        readTable["."] = (stream:Stream, k) -> FieldExp(nextToken(stream, "a field name"), assertRead(stream, k), false);
+        readTable["."] = (stream:Stream, k) -> FieldExp(nextToken(stream, "a field name"), _assertRead(stream, k), false);
         // Safe version (new feature of Haxe 4.3.0)
-        readTable["?."] = (stream:Stream, k) -> FieldExp(nextToken(stream, "a field name"), assertRead(stream, k), true);
+        readTable["?."] = (stream:Stream, k) -> FieldExp(nextToken(stream, "a field name"), _assertRead(stream, k), true);
 
         // Lets you construct key-value pairs for map literals or for-loops
-        readTable["=>"] = (stream:Stream, k) -> KeyValueExp(assertRead(stream, k), assertRead(stream, k));
+        readTable["=>"] = (stream:Stream, k) -> KeyValueExp(_assertRead(stream, k), _assertRead(stream, k));
 
         function unmatchedBracket(b:String) {
             readTable[b] = (stream:Stream, k) -> {
@@ -130,9 +130,9 @@ class Reader {
         unmatchedBracket("]");
         unmatchedBracket("}");
 
-        readTable["`"] = (stream:Stream, k) -> Quasiquote(assertRead(stream, k));
-        readTable[","] = (stream:Stream, k) -> Unquote(assertRead(stream, k));
-        readTable[",@"] = (stream:Stream, k) -> UnquoteList(assertRead(stream, k));
+        readTable["`"] = (stream:Stream, k) -> Quasiquote(_assertRead(stream, k));
+        readTable[","] = (stream:Stream, k) -> Unquote(_assertRead(stream, k));
+        readTable[",@"] = (stream:Stream, k) -> UnquoteList(_assertRead(stream, k));
 
         // Command line syntax:
         readTable["```"] = (stream:Stream, k) -> {
@@ -162,11 +162,11 @@ class Reader {
         // or any of those with the first expression after -> or -+> prefixed by :Void
         function arrowSyntax(countingLambda:Bool, stream:Stream, k:KissState) {
             var countVar = if (countingLambda) {
-                assertRead(stream, k);
+                _assertRead(stream, k);
             } else {
                 null;
             }
-            var firstExp = assertRead(stream, k);
+            var firstExp = _assertRead(stream, k);
             var b = firstExp.expBuilder();
 
             var argsExp:ReaderExp = null;
@@ -182,10 +182,10 @@ class Reader {
             switch (firstExp.def) {
                 case ListExp(_):
                     argsExp = firstExp;
-                    bodyExp = assertRead(stream, k);
+                    bodyExp = _assertRead(stream, k);
                 case Symbol(_):
                     argsExp = b.list([firstExp]);
-                    bodyExp = assertRead(stream, k);
+                    bodyExp = _assertRead(stream, k);
                 case CallExp(_, _):
                     argsExp = b.list([]);
                     bodyExp = firstExp;
@@ -261,8 +261,12 @@ class Reader {
     }
 
     public static function assertRead(stream:Stream, k:KissState):ReaderExp {
+        return _assertRead(stream, k);
+    }
+
+    static function _assertRead(stream:Stream, k:KissState):ReaderExp {
         var position = stream.position();
-        return switch (read(stream, k)) {
+        return switch (_read(stream, k)) {
             case Some(exp):
                 exp;
             case None:
@@ -288,6 +292,10 @@ class Reader {
     }
 
     public static function read(stream:Stream, k:KissState):Option<ReaderExp> {
+        return _read(stream, k);
+    }
+
+    static function _read(stream:Stream, k:KissState):Option<ReaderExp> {
         var readTable = k.readTable;
         stream.dropWhitespace();
 
@@ -311,11 +319,15 @@ class Reader {
         return if (expOrNull != null) {
             Some(expOrNull.withPos(position));
         } else {
-            read(stream, k);
+            _read(stream, k);
         }
     }
 
     public static function readExpArray(stream:Stream, end:String, k:KissState, allowEof=false, startingPos=null):Array<ReaderExp> {
+        return _readExpArray(stream, end, k, allowEof, startingPos);
+    }
+
+    static function _readExpArray(stream:Stream, end:String, k:KissState, allowEof=false, startingPos=null):Array<ReaderExp> {
         var array = [];
         if (startingPos == null)
             startingPos = stream.position();
@@ -323,7 +335,7 @@ class Reader {
             stream.dropWhitespace();
             if (!stream.startsWith(end)) {
                 try {
-                    switch (read(stream, k)) {
+                    switch (_read(stream, k)) {
                         case Some(exp):
                             array.push(exp);
                         case None:
@@ -377,7 +389,7 @@ class Reader {
             if (stream.isEmpty())
                 break;
             var position = stream.position();
-            var nextExp = Reader.read(stream, k);
+            var nextExp = Reader._read(stream, k);
             // The last expression might be a comment, in which case None will be returned
             switch (nextExp) {
                 case Some(nextExp):
@@ -443,7 +455,7 @@ class Reader {
                         wrapInIf = true;
                         stream.dropChars(1, true);
                     }
-                    var interpExpression = assertRead(stream, k);
+                    var interpExpression = _assertRead(stream, k);
                     var b = interpExpression.expBuilder();
                     var stringOfInterpExpression = b.callSymbol("Std.string", [interpExpression]);
                     if (wrapInIf) {
