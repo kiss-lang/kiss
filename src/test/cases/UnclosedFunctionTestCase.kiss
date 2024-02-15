@@ -1,4 +1,4 @@
-(defMacro addSkips [flxMovieClass]
+(function addSkips [flxMovieClass]
     {
         (method &override :Void prepareForSkip []
     })

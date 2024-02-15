@@ -14,7 +14,7 @@ import js.lib.Promise;
 using StringTools;
 
 @:build(kiss.Kiss.buildExpectingError(kiss.EType.EStream('Ran out of expressions before ) was found.')))
-class UnclosedMacroTestCase extends Test {
+class UnclosedFunctionTestCase extends Test {
     function testSplitByAll() {
         Assert.pass();
     }
