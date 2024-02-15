@@ -68,7 +68,7 @@ class Reader {
         readTable["//"] = (stream:Stream, k) -> {
             stream.takeUntilAndDrop("\n");
             null;
-        }; 
+        };
         // Special comment syntax that disables the next whole reader expression:
         readTable["**"] = (stream:Stream, k) -> {
             assertRead(stream, k);
@@ -423,7 +423,7 @@ class Reader {
         do {
             var next = switch (stream.takeChars(1)) {
                 case Some(c): c;
-                default: 
+                default:
                     var type = if (shell) "shell block" else "string literal";
                     throw new StreamError(pos, 'Unterminated $type. Expected $terminator');
             }
