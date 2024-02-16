@@ -559,10 +559,7 @@ class Helpers {
             for (name => value in k.macroVars) {
                 interp.variables.set(name, value);
             }
-            var locals = interp.getLocals();
-            interp.setLocals(new Cloner().clone(locals));
             var value = interp.publicExprReturn(compileTimeHScript(innerExp, k));
-            interp.setLocals(locals);
             if (value == null) {
                 throw KissError.fromExp(exp, "compile-time evaluation returned null");
             }
