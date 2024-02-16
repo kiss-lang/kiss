@@ -250,7 +250,9 @@ class Kiss {
                     throw EExpected(expectedError);
                 case null:
                     printErr();
-                    Sys.exit(1);
+                    Context.onGenerate((types) -> {
+                        Sys.exit(1);
+                    });
                     return null;
                 default:
                     printErr();
@@ -265,7 +267,9 @@ class Kiss {
                     throw EExpected(expectedError);
                 case null:
                     printErr();
-                    Sys.exit(1);
+                    Context.onGenerate((types) -> {
+                        Sys.exit(1);
+                    });
                     return null;
                 default:
                     printErr();
@@ -281,7 +285,9 @@ class Kiss {
                     throw EExpected(expectedError);
                 case null:
                     printErr();
-                    Sys.exit(1);
+                    Context.onGenerate((types) -> {
+                        Sys.exit(1);
+                    });
                     return null;
                 default:
                     printErr();
@@ -523,7 +529,7 @@ class Kiss {
 
             // readerExpToHaxeExpr must be called to process readermacro, alias, and macro definitions
             macroUsed = false;
-            var expr = readerExpToHaxeExpr(nextExp, k);
+            var expr = _try(()->readerExpToHaxeExpr(nextExp, k));
 
             // exps in the loaded file that actually become haxe expressions can be inserted into the
             // file that loaded them at the position (load) was called.
@@ -534,7 +540,7 @@ class Kiss {
             // cause double-evaluation of field forms
             if (loadAllExps) {
                 loadedExps.push(nextExp);
-            } else if (!isEmpty(expr)) {
+            } else if (expr != null && !isEmpty(expr)) {
                 // don't double-compile macros:
                 if (macroUsed) {
                     loadedExps.push(RawHaxe(expr.toString()).withPosOf(nextExp));
