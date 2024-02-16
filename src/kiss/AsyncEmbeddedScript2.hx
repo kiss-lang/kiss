@@ -467,7 +467,8 @@ class AsyncEmbeddedScript2 {
                     }
                     #end
 
-                    nextExp = Kiss.macroExpand(nextExp, k);
+                    nextExp = Kiss._try(()->Kiss.macroExpand(nextExp, k));
+                    if (nextExp == null) return;
                     var stateChanged = k.stateChanged;
 
                     // Allow packing multiple commands into one exp with a (commands <...>) statement
@@ -483,7 +484,7 @@ class AsyncEmbeddedScript2 {
 
                     var exprString = Reader.toString(nextExp.def);
                     var fieldCount = k.fieldList.length;
-                    var expr = Kiss.readerExpToHaxeExpr(nextExp, k);
+                    var expr = Kiss._try(()->Kiss.readerExpToHaxeExpr(nextExp, k));
                     if (expr == null || Kiss.isEmpty(expr))
                         return;
 
@@ -518,7 +519,7 @@ class AsyncEmbeddedScript2 {
                         // If the expression didn't change the KissState when macroExpanding, it can be cached
                         #if kissCache
                         if (!stateChanged) {
-                            var expr = Kiss.readerExpToHaxeExpr(nextExp, k.forHScript());
+                            var expr = Kiss._try(()->Kiss.readerExpToHaxeExpr(nextExp, k.forHScript()));
                             cache[cacheKey] = expr.toString();
                         }
                         #end
