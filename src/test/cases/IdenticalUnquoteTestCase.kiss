@@ -1,0 +1,13 @@
+(defMacroFunction arrayReaderMacro [stream]
+    (let [nextLineStream (stream.expect "array macro line" ->(stream.takeLineAsStream))]
+        (printExp `[,(read nextLineStream) ,(read nextLineStream) ,(read nextLineStream)])))
+
+(defReaderMacro "array " [stream]
+    (arrayReaderMacro stream))
+
+(var testArray
+    array 1 2 3
+    )
+
+(function _testDifferentValues []
+    (Assert.equals "[1,2,3]" "$testArray"))
