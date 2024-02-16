@@ -2,24 +2,12 @@ package test.cases;
 
 import utest.Test;
 import utest.Assert;
-import kiss.EmbeddedScript;
-import kiss.AsyncEmbeddedScript;
 import kiss.AsyncEmbeddedScript2;
 import kiss.Prelude;
 import kiss.FuzzyMap;
 import kiss.FuzzyMapTools;
 
 class DSLTestCase extends Test {
-    function testScript() {
-        var script = new DSLScript();
-        script.run();
-        Assert.isTrue(script.wholeScriptDone);
-    }
-
-    function testFork() {
-        new DSLScript().fork([(self) -> Assert.equals(5, 5), (self) -> Assert.equals(7, 7)]);
-    }
-
     function testAsync() {
         var script = new AsyncDSLScript();
         script.run();
@@ -53,20 +41,17 @@ class DSLTestCase extends Test {
     }
 }
 
-@:build(kiss.EmbeddedScript.build("DSL.kiss", "DSLScript.dsl"))
-class DSLScript extends EmbeddedScript {}
-
-@:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScript.dsl"))
-class AsyncDSLScript extends AsyncEmbeddedScript {}
+@:build(kiss.AsyncEmbeddedScript2.build("", "DSL.kiss", "AsyncDSLScript.dsl"))
+class AsyncDSLScript extends AsyncEmbeddedScript2 {}
 
 // One of these two classes will reuse instructions from the cache, but
 // I can't guarantee which one compiles first:
 
-@:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
-class AsyncDSLScriptThatWillCache extends AsyncEmbeddedScript {}
+@:build(kiss.AsyncEmbeddedScript2.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
+class AsyncDSLScriptThatWillCache extends AsyncEmbeddedScript2 {}
 
-@:build(kiss.AsyncEmbeddedScript.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
-class AsyncDSLScriptThatWillCache2 extends AsyncEmbeddedScript {}
+@:build(kiss.AsyncEmbeddedScript2.build("", "DSL.kiss", "AsyncDSLScriptThatWillCache.dsl"))
+class AsyncDSLScriptThatWillCache2 extends AsyncEmbeddedScript2 {}
 
 // Auto-call cc when the scripter forgets to:
 
