@@ -713,6 +713,18 @@ class SpecialForms {
             b.callSymbol("the", [Helpers.expandTypeSymbol(args[0], k), macroExpand(args[1])]);
         };
 
+        map["cast"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+
+            var newArgs = [macroExpand(args[0])];
+
+            if (args.length == 2) {
+                newArgs.push(Helpers.expandTypeSymbol(args[1], k));
+            }
+
+            b.callSymbol("cast", newArgs);
+        };
+
         return map;
     }
 
