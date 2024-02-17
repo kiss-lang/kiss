@@ -26,11 +26,16 @@ class SpecialForms {
 
         var compileTimeResolveToString = Helpers.compileTimeResolveToString;
 
-        function renameAndDeprecate(oldName:String, newName:String) {
+        function renameAndDeprecate(oldName:String, newName:String, full = true) {
             var form = map[oldName];
             map[oldName] = (wholeExp, args, k) -> {
-                KissError.warnFromExp(wholeExp, '$oldName has been renamed to $newName and deprecated');
-                form(wholeExp, args, k);
+                if (full) {
+                    throw KissError.fromExp(wholeExp, '$oldName has been renamed to $newName and removed from kisslang');
+                }
+                else {
+                    KissError.warnFromExp(wholeExp, '$oldName has been renamed to $newName and deprecated');
+                    form(wholeExp, args, k);
+                }
             }
             map[newName] = form;
             k.formDocs[newName] = k.formDocs[oldName];
