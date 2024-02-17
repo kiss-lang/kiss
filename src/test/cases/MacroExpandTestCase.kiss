@@ -57,5 +57,18 @@
     (makeExampleNoValues
         (localFunction :Stream s [] (Stream.fromString "")))
 
+    // for/doFor
+
+    (localVar listOfLists [["a b c"]["d e f"]])
+    (defAlias &ident lol listOfLists)
+    (defAlias &type Texty String)
+
+    (makeExampleNoValues
+        (for [:Texty t1 :Texty t2 :Texty t3] lol
+            null))
+
+    (makeExampleNoValues
+        (doFor [:Texty t1 :Texty t2 :Texty t3] lol
+            null))
 
     )

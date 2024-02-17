@@ -696,6 +696,16 @@ class SpecialForms {
             b.callSymbol("localFunction", [expandTypeAliases(args[0])].concat(args.slice(1).map(macroExpand)));
         };
 
+        function forExpander (keyword:String) {
+            map[keyword] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+                var b = wholeExp.expBuilder();
+
+                b.callSymbol(keyword, [expandTypeAliases(args[0])].concat(args.slice(1).map(macroExpand)));
+            };
+        }
+        forExpander("for");
+        forExpander("doFor");
+
         return map;
     }
 
