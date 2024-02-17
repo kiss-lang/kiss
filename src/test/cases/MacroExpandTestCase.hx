@@ -13,9 +13,13 @@ import js.lib.Promise;
 using StringTools;
 
 @:build(kiss.Kiss.build())
-class ObjectFormTestCase extends Test {
+class MacroExpandTestCase extends Test {
     function testObjectFormWithAlias() {
         _testObjectFormWithAlias();
+    }
+
+    function testLambdaFormWithAlias() {
+        _testLambdaFormWithAlias();
     }
 }
  

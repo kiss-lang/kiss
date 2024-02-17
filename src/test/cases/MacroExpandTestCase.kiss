@@ -14,3 +14,18 @@
     .Stream (normalExample)
     .Stream (macroExpandExample)
     (Assert.pass))
+
+(defMacroFunction example2 []
+    `(lambda [Stream] (Stream.fromString "")))
+
+(defMacro normalExample2 []
+    (printExp (example2)))
+
+(defMacro macroExpandExample2 []
+    (printExp (macroExpand (example2))))
+
+(function _testLambdaFormWithAlias []
+    (normalExample2)
+    (macroExpandExample2)
+    (Assert.pass))
+
