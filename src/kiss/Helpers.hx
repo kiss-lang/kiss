@@ -910,11 +910,39 @@ class Helpers {
     }
 
     // Like haxe.macro.ExprTools.map() but for Kiss ReaderExps
-    public static function expMap(exp:ReaderExp, func:ReaderExpDef->ReaderExpDef):ReaderExp {
+    public static function expMap(exp:ReaderExp, func:ReaderExp->ReaderExp):ReaderExp {
         var result = switch (exp.def) {
             case CallExp(f, args):
-                CallExp(func(f), [for (arg in args) func(arg)]);
-
+                CallExp(func(f), Lambda.map(args, func));
+            case ListExp(args):
+                ListExp(Lambda.map(args, func));
+            case TypedExp(type, exp):
+                TypedExp(type, func(exp));
+            case MetaExp(meta, exp):
+                MetaExp(meta, func(exp));
+            case FieldExp(field, exp, safeField):
+                FieldExp(field, func(exp), safeField);
+            case KeyValueExp(key, value):
+                KeyValueExp(func(key), func(value));
+            case Quasiquote(exp):
+                Quasiquote(func(exp));
+            case Unquote(exp):
+                Unquote(func(exp));
+            case UnquoteList(exp):
+                UnquoteList(func(exp));
+            case ListEatingExp(exps):
+                ListEatingExp(Lambda.map(exps, func));
+            case TypeParams(types):
+                TypeParams(Lambda.map(types, func));
+            case HaxeMeta(name, params, exp):
+                var newParams = if (params != null) {
+                    Lambda.map(params, func);
+                } else {
+                    null;
+                }
+                HaxeMeta(name, newParams, func(exp));
+            case StrExp(_) | Symbol(_) | RawHaxe(_) | RawHaxeBlock(_) | ListRestExp(_) | None:
+                exp.def;
         };
         return result.withPosOf(exp);
     }
