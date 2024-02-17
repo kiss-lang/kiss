@@ -678,6 +678,19 @@ class SpecialForms {
             b.callSymbol("localVar", [expandTypeAliases(args[0]), macroExpand(args[1])]);
         };
 
+        map["let"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            var bindings = args[0];
+            var bindingsList = Helpers.argList(bindings, "let", false);
+            var newBindingsList = Lambda.flatten([
+                for (pair in bindingsList.groups(2)) {
+                    [expandTypeAliases(pair[0]), macroExpand(pair[1])];
+                }
+            ]);
+            var newBindings = b.list(newBindingsList);
+            b.callSymbol("let", [newBindings].concat(Lambda.map(args.slice(1), macroExpand)));
+        };
+
         return map;
     }
 
