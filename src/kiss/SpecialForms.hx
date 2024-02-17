@@ -669,7 +669,7 @@ class SpecialForms {
 
         map["lambda"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
-            b.callSymbol("lambda", [args[0]].concat([for (exp in args.slice(1)) Kiss.macroExpand(exp, k)]));
+            b.callSymbol("lambda", [Helpers.expandTypeAliases(args[0], k)].concat([for (exp in args.slice(1)) Kiss.macroExpand(exp, k)]));
         };
 
         return map;

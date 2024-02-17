@@ -947,4 +947,12 @@ class Helpers {
         return result.withPosOf(exp);
     }
 
+    public static function expandTypeAliases(exp:ReaderExp, k:KissState) {
+        return switch (exp.def) {
+            case TypedExp(path, innerExp):
+                TypedExp(replaceTypeAliases(path, k), innerExp).withPosOf(exp);
+            default:
+                expMap(exp, expandTypeAliases.bind(_, k));
+        };
+    }
 }

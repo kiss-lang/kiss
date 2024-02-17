@@ -1,4 +1,5 @@
 (defAlias &ident Stream kiss.Stream)
+(defAlias &type Stream kiss.Stream)
 
 (defMacro makeExample [expression &body b]
     `(let [normal ,(printExp expression)
@@ -14,6 +15,11 @@
 
     (makeExample
         (lambda [Stream] (Stream.fromString ""))
+        (normal null)
+        (expanded null))
+
+    (makeExample
+        (lambda [:Stream s] (Stream.fromString ""))
         (normal null)
         (expanded null))
 
