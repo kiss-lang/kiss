@@ -955,4 +955,13 @@ class Helpers {
                 expMap(exp, expandTypeAliases.bind(_, k));
         };
     }
+
+    public static function expandTypeSymbol(exp:ReaderExp, k:KissState) {
+        return switch (exp.def) {
+            case Symbol(path):
+                Symbol(replaceTypeAliases(path, k)).withPosOf(exp);
+            default:
+                exp;
+        };
+    }
 }

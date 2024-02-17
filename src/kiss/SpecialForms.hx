@@ -707,6 +707,12 @@ class SpecialForms {
         forExpander("for");
         forExpander("doFor");
 
+        map["the"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+
+            b.callSymbol("the", [Helpers.expandTypeSymbol(args[0], k), macroExpand(args[1])]);
+        };
+
         return map;
     }
 

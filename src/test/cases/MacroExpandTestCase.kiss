@@ -71,4 +71,10 @@
         (doFor [:Texty t1 :Texty t2 :Texty t3] lol
             null))
 
+    // the
+    (makeExample
+        .content (the Stream (Stream.fromString "hey"))
+        (Assert.equals normal "hey\n")
+        (Assert.equals expanded "hey\n"))
+
     )
