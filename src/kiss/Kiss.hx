@@ -46,6 +46,7 @@ typedef KissState = {
     endOfFileReadTable:ReadTable,
     fieldForms:Map<String, FieldFormFunction>,
     specialForms:Map<String, SpecialFormFunction>,
+    specialFormMacroExpanders:Map<String, MacroFunction>,
     macros:Map<String, MacroFunction>,
     formDocs:Map<String, FormDoc>,
     doc:(String, Null<Int>, Null<Int>, ?String, ?String)->Void,
@@ -100,6 +101,7 @@ class Kiss {
             endOfFileReadTable: new ReadTable(),
             fieldForms: new Map(),
             specialForms: null,
+            specialFormMacroExpanders: null,
             macros: null,
             formDocs: new Map(),
             doc: null,
@@ -215,6 +217,7 @@ class Kiss {
 
         FieldForms.addBuiltins(k);
         k.specialForms = SpecialForms.builtins(k, context);
+        k.specialFormMacroExpanders = SpecialForms.builtinMacroExpanders(k, context);
         k.macros = Macros.builtins(k);
 
         return k;
@@ -620,6 +623,7 @@ class Kiss {
         var macros = k.macros;
         var fieldForms = k.fieldForms;
         var specialForms = k.specialForms;
+        var specialFormMacroExpanders = k.specialFormMacroExpanders;
         var formDocs = k.formDocs;
 
         // Bind the table arguments of this function for easy recursive calling/passing
@@ -735,6 +739,9 @@ class Kiss {
             case CallExp({pos: _, def: Symbol(specialForm)}, args) if (specialForms.exists(specialForm) && !macroExpandOnly):
                 checkNumArgs(specialForm);
                 Right(Kiss.measure(specialForm, ()->specialForms[specialForm](exp, args.copy(), k), true));
+            case CallExp({pos: _, def: Symbol(specialForm)}, args) if (specialFormMacroExpanders.exists(specialForm) && macroExpandOnly):
+                checkNumArgs(specialForm);
+                Left(specialFormMacroExpanders[specialForm](exp, args.copy(), k));
             case CallExp({pos: _, def: Symbol(alias)}, args) if (k.callAliases.exists(alias)):
                 convert(CallExp(k.callAliases[alias].withPosOf(exp), args).withPosOf(exp));
             case CallExp(func, args):

@@ -6,6 +6,7 @@ import kiss.Reader;
 import kiss.ReaderExp;
 import uuid.Uuid;
 import kiss.Kiss;
+import kiss.Macros;
 
 using uuid.Uuid;
 using kiss.Reader;
@@ -644,6 +645,21 @@ class SpecialForms {
                     throw KissError.fromExp(wholeExp, '${type.name} must be a class without any interfaces');
             }
             return none(wholeExp);
+        };
+
+        return map;
+    }
+
+    public static function builtinMacroExpanders(k:KissState, ?context:FrontendContext) {
+        var map:Map<String, MacroFunction> = [];
+
+        // when macroExpanding an (object) expression, don't apply aliases to the field names
+        map["object"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            var pairs = Lambda.flatten([for (pair in args.groups(2)) {
+                [pair[0], Kiss.macroExpand(pair[1], k)];
+            }]);
+            b.callSymbol("object", pairs);
         };
 
         return map;
