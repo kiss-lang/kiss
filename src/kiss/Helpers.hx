@@ -137,7 +137,7 @@ class Helpers {
 
     public static function varName(formName:String, nameExp:ReaderExp, nameType = "variable") {
         return switch (nameExp.def) {
-            case Symbol(name):
+            case Symbol(name) if (!name.contains(".")):
                 name;
             case MetaExp(_, nameExp) | TypedExp(_, nameExp):
                 varName(formName, nameExp);
