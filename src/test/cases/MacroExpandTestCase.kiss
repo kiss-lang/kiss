@@ -6,10 +6,16 @@
             expanded ,(printExp (macroExpand expression))]
         ,@b))
 
-(defMacro makeExampleNoValues [expression]
+(defMacro makeExampleNoValues [expression &opt body1 body2]
     `{
-        ,(printExp expression)
-        ,(printExp (macroExpand expression))
+        {
+            ,(printExp expression)
+            ,(or body1 `{})
+        }
+        {
+            ,(printExp (macroExpand expression))
+            ,(or body2 `{})
+        }
     })
 
 (function _testAllForms []
@@ -43,5 +49,13 @@
         (let [:Stream s (Stream.fromString "")
                 Stream (Stream.fromString "")]
             null))
+
+    // localFunction
+    (makeExampleNoValues
+        (localFunction Stream [] (Stream.fromString "")))
+
+    (makeExampleNoValues
+        (localFunction :Stream s [] (Stream.fromString "")))
+
 
     )
