@@ -445,11 +445,12 @@ class SpecialForms {
         };
 
         // Type check syntax:
-        k.doc("the", 2, 3, '(the <?package> <type> <value>)');
+        k.doc("the", 2, 3, '(the <type> <value>)');
         map["the"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var pkg = "";
             var whichArg = "first";
             if (args.length == 3) {
+                throw KissError.fromExp(wholeExp, "(the <package> <Type> <value>) form is no longer allowed. use (the <package.Type> <value>) instead");
                 pkg = switch (args.shift().def) {
                     case Symbol(pkg): pkg;
                     default: throw KissError.fromExp(wholeExp, '$whichArg argument to (the... ) should be a valid haxe package');
