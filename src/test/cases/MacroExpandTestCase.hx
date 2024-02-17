@@ -14,12 +14,9 @@ using StringTools;
 
 @:build(kiss.Kiss.build())
 class MacroExpandTestCase extends Test {
-    function testObjectFormWithAlias() {
-        _testObjectFormWithAlias();
-    }
-
-    function testLambdaFormWithAlias() {
-        _testLambdaFormWithAlias();
+    function testAllForms() {
+        _testAllForms();
+        Assert.pass();
     }
 }
  

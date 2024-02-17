@@ -1,31 +1,20 @@
 (defAlias &ident Stream kiss.Stream)
 
-(defMacroFunction example []
-    `(object
-        Stream (Stream.fromString "")))
+(defMacro makeExample [expression &body b]
+    `(let [normal ,(printExp expression)
+            expanded ,(printExp (macroExpand expression))]
+        ,@b))
 
-(defMacro normalExample []
-    (printExp (example)))
+(function _testAllForms []
+    (makeExample
+        (object
+            Stream (Stream.fromString ""))
+        normal.Stream
+        expanded.Stream)
 
-(defMacro macroExpandExample []
-    (printExp (macroExpand (example))))
+    (makeExample
+        (lambda [Stream] (Stream.fromString ""))
+        (normal null)
+        (expanded null))
 
-(function _testObjectFormWithAlias []
-    .Stream (normalExample)
-    .Stream (macroExpandExample)
-    (Assert.pass))
-
-(defMacroFunction example2 []
-    `(lambda [Stream] (Stream.fromString "")))
-
-(defMacro normalExample2 []
-    (printExp (example2)))
-
-(defMacro macroExpandExample2 []
-    (printExp (macroExpand (example2))))
-
-(function _testLambdaFormWithAlias []
-    (localVar l (normalExample2))
-    (localVar l2 (macroExpandExample2))
-    (Assert.pass))
-
+    )
