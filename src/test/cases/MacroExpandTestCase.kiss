@@ -25,7 +25,7 @@
     (printExp (macroExpand (example2))))
 
 (function _testLambdaFormWithAlias []
-    (normalExample2)
-    (macroExpandExample2)
+    (localVar l (normalExample2))
+    (localVar l2 (macroExpandExample2))
     (Assert.pass))
 
