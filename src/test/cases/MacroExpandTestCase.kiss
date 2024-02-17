@@ -80,4 +80,9 @@
         .content (cast (Stream.fromString "hey") Stream)
         (Assert.equals normal "hey\n")
         (Assert.equals expanded "hey\n"))
+
+    (makeExampleNoValues
+        (try (throw (Stream.fromString "error"))
+            (catch [:Stream s]
+                (print "as expected"))))
     )

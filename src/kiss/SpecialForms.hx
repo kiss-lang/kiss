@@ -725,6 +725,36 @@ class SpecialForms {
             b.callSymbol("cast", newArgs);
         };
 
+        map["try"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+
+            var tryKissExp = args[0];
+            var catchKissExps = args.slice(1);
+
+            var newCatchExps = [
+                for (catchExp in catchKissExps) {
+                    switch (catchExp.def) {
+                        case CallExp({def:Symbol("catch")}, catchBlockArgs):
+                            b.callSymbol("catch", [expandTypeAliases(catchBlockArgs[0])].concat(Lambda.map(catchBlockArgs.slice(1), macroExpand)));
+                        default:
+                            catchExp;
+                    }
+                }
+            ];
+
+            b.callSymbol("try", [macroExpand(tryKissExp)].concat(newCatchExps));
+        };
+
+        function identity(wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) {
+            return wholeExp;
+        }
+        map["import"] = identity;
+        map["importAs"] = identity;
+        map["importAll"] = identity;
+        map["using"] = identity;
+        map["extends"] = identity;
+        map["implements"] = identity;
+
         return map;
     }
 
