@@ -535,6 +535,7 @@ class Helpers {
         interp.variables.set("ReaderExp", ReaderExpDef);
         interp.variables.set("nextToken", Reader.nextToken.bind(_, "a token"));
         interp.variables.set("printExp", printExp);
+        interp.variables.set("macroExpand", Kiss.macroExpand.bind(_, k));
         interp.variables.set("kiss", {
             ReaderExp: {
                 ReaderExpDef: ReaderExpDef
