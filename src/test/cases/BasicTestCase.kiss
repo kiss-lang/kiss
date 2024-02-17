@@ -427,6 +427,9 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (assertLet [(Some _) (indexOf ["hey" "found"] key)] 0)
         (assertLet [(Some _) (indexOf ["you" "me"] value)] 0))
 
+    // This demonstrates a nice compiler warning when you make a certain mistake:
+    (when myMap.exists "hey" (print "always true"))
+
     // Map destructuring:
     (let [[=>"hey" v1 =>"found" v2] myMap]
         (Assert.equals "you" v1)

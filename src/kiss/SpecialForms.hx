@@ -46,12 +46,25 @@ class SpecialForms {
 
             // blocks can contain field forms that don't return an expression. These can't be included in blocks
             var exprs = [];
+            var lastArg = null;
+            if (args.length > 1) {
+                lastArg = args.pop();
+            }
             for (bodyExp in args) {
+                switch(bodyExp.def) {
+                    case Symbol(_) if (lastArg != null):
+                        KissError.warnFromExp(bodyExp, "This looks like an unused value");
+                    default:
+                }
+
+
                 var expr = k.convert(bodyExp);
                 if (expr != null) {
                     exprs.push(expr);
                 }
             }
+            if (lastArg != null)
+                exprs.push(k.convert(lastArg));
             EBlock(exprs).withMacroPosOf(wholeExp);
         };
 
