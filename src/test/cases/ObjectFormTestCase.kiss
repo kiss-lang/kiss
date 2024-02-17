@@ -1,0 +1,16 @@
+(defAlias &ident Stream kiss.Stream)
+
+(defMacroFunction example []
+    `(object
+        Stream (Stream.fromString "")))
+
+(defMacro normalExample []
+    (printExp (example)))
+
+(defMacro macroExpandExample []
+    (printExp (macroExpand (example))))
+
+(function _testObjectFormWithAlias []
+    .Stream (normalExample)
+    .Stream (macroExpandExample)
+    (Assert.pass))
