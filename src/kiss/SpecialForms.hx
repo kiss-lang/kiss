@@ -258,7 +258,7 @@ class SpecialForms {
             }
             EFunction(FAnonymous, Helpers.makeFunction(null, returnsValue, args[0], args.slice(1), k, "lambda", [])).withMacroPosOf(wholeExp);
         };
-        
+
         k.doc("localFunction", 3, null, "(localFunction <optional :Type> <name> [<args...>] <body...>)");
         map["localFunction"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var name = "";
@@ -277,27 +277,27 @@ class SpecialForms {
             }
             EFunction(FNamed(name, false), Helpers.makeFunction(null, returnsValue, args[1], args.slice(2), k, "localFunction", [])).withMacroPosOf(wholeExp);
         };
-    
+
         function forExpr(formName:String, wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) {
             var uniqueVarName = "_" + Uuid.v4().toShort();
             var namesExp = args[0];
             var listExp = args[1];
             var bodyExps = args.slice(2);
-            
+
             var b = wholeExp.expBuilder();
             var m = macro $i{uniqueVarName};
 
             var innerLet = false;
             var varsInScope = [];
             var loopVarExpr:Expr = switch (namesExp.def) {
-                case KeyValueExp({pos: _, def: Symbol(s1)}, {pos: _, def: Symbol(s2)}): 
+                case KeyValueExp({pos: _, def: Symbol(s1)}, {pos: _, def: Symbol(s2)}):
                     varsInScope.push({name:s1});
                     varsInScope.push({name:s2});
                     k.convert(namesExp);
-                case Symbol(s): 
+                case Symbol(s):
                     varsInScope.push({name:s});
                     k.convert(namesExp);
-                case ListExp(_) | TypedExp(_, {pos:_, def:Symbol(_)}): 
+                case ListExp(_) | TypedExp(_, {pos:_, def:Symbol(_)}):
                     innerLet = true;
                     b.haxeExpr(m);
                 default:
@@ -336,7 +336,7 @@ class SpecialForms {
             EWhile(macro true, k.convert(wholeExp.expBuilder().begin(args)), true).withMacroPosOf(wholeExp);
         };
 
-        
+
         function whileForm(invert:Bool, wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) {
             var funcName = if (invert) "until" else "while";
             var b = wholeExp.expBuilder();
@@ -354,13 +354,13 @@ class SpecialForms {
         map["until"] = whileForm.bind(true);
 
         k.doc("return", 0, 1, '(return <?value>)');
-        map["return"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {    
+        map["return"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var returnExpr = if (args.length == 1) k.convert(args[0]) else null;
             EReturn(returnExpr).withMacroPosOf(wholeExp);
         };
-        
+
         k.doc("break", 0, 0, "(break)");
-        map["break"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {   
+        map["break"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             EBreak.withMacroPosOf(wholeExp);
         };
 
@@ -384,7 +384,7 @@ class SpecialForms {
             var cases:kiss.List<ReaderExp> = [for (c in args.slice(1)) {
                 c.expBuilder().neverCase();
             }];
-            
+
             Helpers.checkNoEarlyOtherwise(cases);
 
             var isTupleCase = switch (args[0].def) {
@@ -411,7 +411,7 @@ class SpecialForms {
 
             var canCompareNull = !isTupleCase;
 
-            
+
             // case also override's haxe's switch() behavior by refusing to match null values against <var> patterns.
             if (canCompareNull) {
                 var nullExpr = defaultExpr;
@@ -432,7 +432,7 @@ class SpecialForms {
                 }
 
                 var nullCase = if (k.hscript) {
-                    b.callSymbol("null", [b.raw(nullExpr.toString())]);  
+                    b.callSymbol("null", [b.raw(nullExpr.toString())]);
                 } else {
                     var gensym = b.symbol();
                     b.call(b.callSymbol("when", [b.callSymbol("Prelude.isNull", [gensym]), gensym]), [b.raw(nullExpr.toString())]);
@@ -615,7 +615,7 @@ class SpecialForms {
             context.addImport(Reader.toString(exps[0].def), IAll, wholeExp.macroPos());
             return none(wholeExp);
         };
-        
+
         k.doc("using", 1, null, "(using <Types...>)");
         map["using"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             requireContext(wholeExp, "using");
@@ -674,7 +674,7 @@ class SpecialForms {
 
         return map;
     }
-    
+
     public static function caseOr(wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState):Expr {
         wholeExp.checkNumArgs(2, null, "(or <pattern1> <pattern2> <patterns...>)");
         var b = wholeExp.expBuilder();
