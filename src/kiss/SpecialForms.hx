@@ -99,7 +99,7 @@ class SpecialForms {
                     {
                         quotes: Unquoted,
                         field: switch (pair[0].def) {
-                            case Symbol(name): name;
+                            case Symbol(name) if (!name.contains(".")): name;
                             case TypedExp(_,
                                 {pos: _, def: Symbol(_)}): throw KissError.fromExp(pair[0], "type specification on anonymous objects will be ignored");
                             default: throw KissError.fromExp(pair[0], "first expression in anonymous object field binding should be a plain symbol");
