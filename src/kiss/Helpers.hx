@@ -229,10 +229,10 @@ class Helpers {
                     {
                         // These could use varName() and explicitType() but so far there are no &meta annotations for function arguments
                         name: switch (funcArg.def) {
-                            case Symbol(name) | TypedExp(_, {pos: _, def: Symbol(name)}):
+                            case Symbol(name) | TypedExp(_, {pos: _, def: Symbol(name)}) if (!name.contains(".")):
                                 name;
                             default:
-                                throw KissError.fromExp(funcArg, 'function argument should be a symbol or typed symbol');
+                                throw KissError.fromExp(funcArg, 'function argument should be a plain symbol or typed symbol');
                         },
                         type: switch (funcArg.def) {
                             case TypedExp(type, _):
