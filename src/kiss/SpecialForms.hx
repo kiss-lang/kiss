@@ -657,19 +657,25 @@ class SpecialForms {
 
     public static function builtinMacroExpanders(k:KissState, ?context:FrontendContext) {
         var map:Map<String, MacroFunction> = [];
-
+        var macroExpand = Kiss.macroExpand.bind(_, k);
+        var expandTypeAliases = Helpers.expandTypeAliases.bind(_, k);
         // when macroExpanding an (object) expression, don't apply aliases to the field names
         map["object"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
             var pairs = Lambda.flatten([for (pair in args.groups(2)) {
-                [pair[0], Kiss.macroExpand(pair[1], k)];
+                [pair[0], macroExpand(pair[1])];
             }]);
             b.callSymbol("object", pairs);
         };
 
         map["lambda"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
-            b.callSymbol("lambda", [Helpers.expandTypeAliases(args[0], k)].concat([for (exp in args.slice(1)) Kiss.macroExpand(exp, k)]));
+            b.callSymbol("lambda", [expandTypeAliases(args[0])].concat([for (exp in args.slice(1)) macroExpand(exp)]));
+        };
+
+        map["localVar"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            b.callSymbol("localVar", [expandTypeAliases(args[0]), macroExpand(args[1])]);
         };
 
         return map;

@@ -6,13 +6,21 @@
             expanded ,(printExp (macroExpand expression))]
         ,@b))
 
+(defMacro makeExampleNoValues [expression]
+    `{
+        ,(printExp expression)
+        ,(printExp (macroExpand expression))
+    })
+
 (function _testAllForms []
+    // object
     (makeExample
         (object
             Stream (Stream.fromString ""))
         normal.Stream
         expanded.Stream)
 
+    // lambda
     (makeExample
         (lambda [Stream] (Stream.fromString ""))
         (normal null)
@@ -22,5 +30,12 @@
         (lambda [:Stream s] (Stream.fromString ""))
         (normal null)
         (expanded null))
+
+    // localVar
+    (makeExampleNoValues
+        (localVar Stream (Stream.fromString "")))
+
+    (makeExampleNoValues
+        (localVar :Stream s (Stream.fromString "")))
 
     )
