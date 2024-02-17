@@ -909,4 +909,14 @@ class Helpers {
         throw 'Could not find haxelib $haxelibName in class paths';
     }
 
+    // Like haxe.macro.ExprTools.map() but for Kiss ReaderExps
+    public static function expMap(exp:ReaderExp, func:ReaderExpDef->ReaderExpDef):ReaderExp {
+        var result = switch (exp.def) {
+            case CallExp(f, args):
+                CallExp(func(f), [for (arg in args) func(arg)]);
+
+        };
+        return result.withPosOf(exp);
+    }
+
 }
