@@ -5,7 +5,7 @@
         (catch [:String message]
             (Assert.equals "src/test/cases/BasicTestCase.kiss:4:13: Assertion failed: false should have been true
 From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" message)))
-    
+
     (assert true)
     (assert ![])
     (assertEquals 6 6 6))
@@ -25,7 +25,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     // #| ... |# parses and injects raw Haxe code.
     // Order of operations will apply
     (Assert.equals 23 #|5 + 6 * 3|#)
-    // #{ ... }# parses and injects a raw Haxe block. It is preferred over #| |# 
+    // #{ ... }# parses and injects a raw Haxe block. It is preferred over #| |#
     (let [&mut a 5 &mut b 6]
         #{
             a += 6; b += 5;
@@ -35,7 +35,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 
 
 // (function) declares static functions
-(function myFloor [num] 
+(function myFloor [num]
     // funcalls can use dot access
     (Math.floor num))
 
@@ -64,7 +64,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (Assert.equals -2 (- 5 4 3))
     (Assert.equals -2 (- 2)))
 
-(function _testMultiplication [] 
+(function _testMultiplication []
     (Assert.equals 60 (* 2 5 6))
     (Assert.equals 5522401584 (* 84 289 89 71 36))
     (Assert.equals "heyheyhey" (* "hey" 3)))
@@ -86,7 +86,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (Assert.isTrue (< 1 2 3 4))
     (Assert.isFalse (< 1 1 3 4))
     (Assert.isFalse (< 1 12 12)))
-    
+
 (function _testLesserEqual []
     (Assert.isTrue (<= 1 2 3 4))
     (Assert.isTrue (<= 1 1 3 4))
@@ -178,13 +178,13 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 
 (function _testCond []
     (Assert.equals "this one"
-        (cond 
+        (cond
             ((= 5 6) "not this")
             ((= 8 9) "not this either")
             ((= 1 1) "this one")
             (true "not the default")))
     (Assert.equals "the default"
-        (cond 
+        (cond
             ((= 5 6) "not this")
             ((= 8 9) "not this either")
             ((= 2 1) "not the third one")
@@ -218,7 +218,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 (var myNot1 (not 5))
 (var myNot2 !5)
 
-(var myFilteredList (begin 
+(var myFilteredList (begin
     (localVar l [-1 -2 5 -3 6])
     (l.filter (lambda [v] (< 0 v)))))
 
@@ -412,7 +412,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
             (Assert.equals 5 v)
             (Assert.isTrue (Type.enumEq (Some 5) inner)))
         (otherwise (Assert.fail)))
-    
+
     // Otherwise blocks should allow multiple expressions, too:
     (case 5
         (otherwise
@@ -478,7 +478,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (localVar message1 (ReaderExp.StrExp "Welcome "))
     (localVar message2 (ReaderExp.StrExp " (Guest #"))
     (localVar message3 (ReaderExp.StrExp ")"))
-    
+
     `(begin (set welcomeCount (+ welcomeCount 1))
         (+ ,message1 ,name ,message2 (Std.string welcomeCount) ,message3)))
 
@@ -533,16 +533,16 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (unlessLet [(Some (or 5 6)) some5]
             (print "something else went wrong!")
             (Assert.fail))
-            
-        // Don't double evaluate the expression:    
+
+        // Don't double evaluate the expression:
         (let [&mut v 1]
             (unlessLet [2 (begin (+= v 1) v)]
                 (Assert.fail))
             (Assert.equals 2 v))
-            
+
         (assertThrows (assertLet [(Some thing) none] thing))
         (Assert.equals 5 (assertLet [(Some thing) some5] thing)))
-        
+
         // Issue #64 regression tests:
         (whenLet [something null]
             (Assert.fail))
@@ -598,7 +598,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 (function _testLetThrow []
     (try
             {
-                (letThrow 
+                (letThrow
                         (throw "the error we want")
                     (catch [e] (Assert.fail)))
                 (Assert.fail)}
@@ -742,7 +742,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (assertThrows (<= a))
         (assertThrows (> a))
         (assertThrows (>= a))
-        
+
         )
     (Assert.pass))
 
@@ -812,7 +812,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (localFunction c [val] (+ (a val) (b val)))
         (Assert.equals 5 (c 1))))
 
-(function _testWithTempSet []  
+(function _testWithTempSet []
     (let [&mut v 5
             &mut v2 3]
         (assertEquals 5 v)
@@ -844,13 +844,13 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (Assert.isTrue (savedPrints.contains "anotherStaticNullToPrint: null"))
         (Assert.isTrue (savedPrints.contains "nullDefinedInHaxe: null"))
         (Assert.isTrue (savedPrints.contains "staticNullDefinedInHaxe: null"))
-        
+
         // TODO This statement prints a warning at compile-time, which won't
         // appear in savedPrints, so it's harder to test...
         (prop tp "bad")
-        
+
         (let [u null]
-            // TODO this statement should print a warning at compile-time (#112) 
+            // TODO this statement should print a warning at compile-time (#112)
             (localVar v "bad")
 
             (set savedPrints [])
@@ -870,21 +870,21 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (var ts "bad")
 
         (let [u null]
-            // TODO this statement should print a warning at compile-time (#112) 
+            // TODO this statement should print a warning at compile-time (#112)
             (localVar v "bad")
 
             (set savedPrints [])
             (printLocalNulls)
             (Assert.isFalse (savedPrints.contains "anotherStaticNullToPrint: null"))
             (Assert.isTrue (savedPrints.contains "u: null")))
-        
+
         // Test for loop capture variables
         (set savedPrints [])
         (doFor a (for _ (range 5) null)
             (printLocalNulls))
         (Assert.isTrue (savedPrints.contains "a: null"))
         (Assert.equals 5 savedPrints.length)
-        
+
         (set savedPrints [])
         (let [:Map<String,String> m (for a (range 5) =>"$a" "a")]
             (doFor =>k v m
@@ -899,7 +899,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
                 (printLocalNulls)))
         (Assert.isTrue (savedPrints.contains "v: null"))
         (Assert.equals 5 savedPrints.length)
-        
+
         (set savedPrints [])
         (doFor [a b c] (for _ (range 5) [1 null 5])
             (printLocalNulls))
@@ -944,7 +944,7 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (never otherwise)))
 
 
-        
+
 
 (function _testQuickPrintOnSetVar []
     (let [&mut v 5]

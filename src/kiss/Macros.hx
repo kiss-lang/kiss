@@ -268,7 +268,7 @@ class Macros {
         addBodyIf("unless", "if", true);
         addBodyIf("#when", "#if", false);
         addBodyIf("#unless", "#if", true);
-        
+
         addCond(k, macros, "cond", "if");
         addCond(k, macros, "#cond", "#if");
 
@@ -277,7 +277,7 @@ class Macros {
             var b = wholeExp.expBuilder();
             b.str(Context.definedValue(compileTimeResolveToString("The only argument to (#value...)", "a compiler flag's name", args[0], k)));
         };
-        
+
         k.doc("#symbol", 1, 1, '(#symbol "<name>")');
         macros["#symbol"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
@@ -302,7 +302,7 @@ class Macros {
 
             return b.let([b.typed("Dynamic", uniqueVarSymbol), firstVal], body);
         };
-       
+
 
         macros["or"] = _or;
 
@@ -349,7 +349,7 @@ class Macros {
         macros["assert"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
             var expression = exps[0];
-            
+
             var letVal = b.symbol();
             b.callSymbol("let", [
                 b.list([
@@ -418,7 +418,7 @@ class Macros {
                     throw KissError.fromExp(exp, 'first argument to $formName should be a String or list of strings');
             };
         }
-        
+
         k.doc("defmacro", 3, null, '(defMacro <name> [<args...>] <body...>)');
         macros["defmacro"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             k.stateChanged = true;
@@ -451,7 +451,7 @@ class Macros {
 
             var builderName:String = null;
             for (arg in argList) {
-                
+
                 switch (arg.def) {
                     case MetaExp("builder", {pos: _, def: Symbol(name)}):
                         if (builderName == null) {
@@ -473,7 +473,7 @@ class Macros {
                                     macroCallForm += ' <?$name>';
                                 }
                                 ++maxArgs;
-                            
+
                             case MetaExp("opt", {pos: _, def: Symbol(name)}):
                                 argNames.push(name);
                                 macroCallForm += ' <?$name>';
@@ -798,7 +798,7 @@ class Macros {
                 switch (exps[1].def) {
                     case CallExp({pos: _, def: Symbol("catch")}, catchArgs):
                         exps.splice(1,1);
-                        rejectionHandler = b.symbol();    
+                        rejectionHandler = b.symbol();
                         rejectionHandlerArgsAndBody = catchArgs;
                     default:
                         usingDefaultHandler = true;
@@ -833,7 +833,7 @@ class Macros {
                 ]),
                 rejectionHandler
             ]);
-            
+
             if (rejectionHandlerArgsAndBody.length > 0) {
                 exp = b.callSymbol("withFunctions", [
                     b.list([b.call(b.typed("Dynamic", rejectionHandler),
@@ -844,9 +844,9 @@ class Macros {
 
             return exp;
         }
-       
+
         macros["awaitLet"] = awaitLet.bind(null);
-        
+
         k.doc("whileLet", 2, null, "(whileLet [<bindings...>] <body...>)");
         macros["whileLet"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
@@ -1027,7 +1027,7 @@ class Macros {
             k.stateChanged = true;
             var name = exps[0].symbolName().withPosOf(exps[0]);
             var b = wholeExp.expBuilder();
-            
+
             return b.callSymbol("_setMacroVar", [name, exps[1]]);
         };
 
@@ -1073,7 +1073,6 @@ class Macros {
                 }
             }
 
-            var b = wholeExp.expBuilder();
             b.callSymbol("object", objectExps);
         }
 
@@ -1353,14 +1352,14 @@ class Macros {
         macros["printAllNulls"] = printAll.bind(false, true);
         k.doc("printLocalNulls", 0, 0, "(printLocalNulls)");
         macros["printLocalNulls"] = printAll.bind(true, true);
-        
+
         var savedVarFilename = null;
         k.doc("savedVarFile", 1, 1, '(savedVarFilename "<path>")');
         macros["savedVarFile"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             savedVarFilename = compileTimeResolveToString("The only argument to (savedVarFile...)", "a json filename", exps[0], k);
             null;
         };
-        
+
         k.doc("savedVar", 2, 2, "(savedVar <:Type> <name> <initial value>)");
         macros["savedVar"] = (wholeExp:ReaderExp, exps:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
@@ -1375,7 +1374,7 @@ class Macros {
             } else {
                 b.str("." + k.className + ".json");
             };
-        
+
             function ifLetFileJson(thenBlock:Array<ReaderExp>, elseBlock:Array<ReaderExp>) {
                 return b.callSymbol("if", [
                     b.callSymbol("and", [
@@ -1391,34 +1390,34 @@ class Macros {
                     b.begin(elseBlock)
                 ]);
             }
-        
+
             var setAndSave = [
                 b.callSymbol("dictSet", [b.symbol("json"), b.str(nameString), b.raw("tink.Json.stringify(v)")]),
                 b.callSymbol("sys.io.File.saveContent", [filename, b.raw("haxe.Json.stringify(json)")]),
                 b.raw("v;")
             ];
-        
+
             b.begin([
                 b.callSymbol("var", [name, b.callSymbol("property", [b.symbol("get"), b.symbol("set")])]),
                 b.callSymbol(
                     "function", [
-                        b.typed(type, b.symbol('get_${nameString}')), 
-                        b.list([]), 
+                        b.typed(type, b.symbol('get_${nameString}')),
+                        b.list([]),
                         ifLetFileJson([
                             b.callSymbol("if", [
                                 b.callSymbol("json.exists", [b.str(nameString)]),
                                 b.raw("{ var v:" + type + " = tink.Json.parse(json['" + nameString + "']); v;}"),
                                 initialValue
                             ])
-                        ], 
+                        ],
                         [
                             initialValue
                         ])
                     ]),
                 b.callSymbol(
                     "function", [
-                        b.typed(type, b.symbol('set_${nameString}')), 
-                        b.list([b.typed(type, b.symbol("v"))]), 
+                        b.typed(type, b.symbol('set_${nameString}')),
+                        b.list([b.typed(type, b.symbol("v"))]),
                         ifLetFileJson(
                             setAndSave,
                             [
@@ -1481,7 +1480,7 @@ class Macros {
                     default:
                         throw KissError.fromExp(funcExp, "withFunctions function definition should follow this form: (<funcName> [<args...>] <body...>)");
                 }
-                
+
             } while (funcList.length > 0);
 
             var exp = b.begin(localFunctions.concat(args.slice(1)));
@@ -1508,7 +1507,7 @@ class Macros {
             };
             null;
         };
-        
+
         k.doc("typeCase", 2, null, "(typeCase [<values>] ([:<Type> <name> <more typed names...>] <body>) <more cases...> (otherwise <required default>))");
         macros["typeCase"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
@@ -1563,12 +1562,12 @@ class Macros {
                     default: c;
                 }
             }];
-            
+
             b.let(outerLetBindings, [
                 b.callSymbol("case", [b.list(symbols)].concat(cases))
             ]);
         }
-        
+
         return macros;
     }
 
@@ -1599,7 +1598,7 @@ class Macros {
                 var patternTypePath = Prelude.symbolNameValue(type);
                 return switch (instance.def) {
                     case TypedExp(typePath, instanceExp) if (typePath == patternTypePath):
-                        matchExpr(patternExp, instanceExp);  
+                        matchExpr(patternExp, instanceExp);
                     default:
                         false;
                 };
