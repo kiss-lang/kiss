@@ -1063,8 +1063,19 @@ class Macros {
                 [];
             }
 
+            var b = wholeExp.expBuilder();
+
             for (exp in exps) {
                 switch (exp.def) {
+                    // (objectWith obj.field) expands to (object field obj.field)
+                    case Symbol(withDots) if (withDots.indexOf(".") != -1):
+                        var fieldName = withDots.split(".").pop();
+                        objectExps.push(b.symbol(fieldName));
+                        objectExps.push(exp);
+                    // (objectWith .field <exp>) expands to (object field .field <exp>)
+                    case FieldExp(fieldName, innerExp, _):
+                        objectExps.push(b.symbol(fieldName));
+                        objectExps.push(exp);
                     case Symbol(_):
                         objectExps.push(exp);
                         objectExps.push(exp);

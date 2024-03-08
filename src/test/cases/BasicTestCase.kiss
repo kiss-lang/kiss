@@ -612,6 +612,16 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 (function _testDotAccessOnAlias []
     (Assert.equals 5 owf.field))
 
+(function _testObjectWith []
+    (let [obj (object name "obby" purpose "idk" id 5)
+            nil null
+            id 7
+            objWith (objectWith obj.name .purpose obj id nil?.notAField)]
+        (Assert.equals "obby" objWith.name)
+        (Assert.equals "idk" objWith.purpose)
+        (Assert.equals 7 objWith.id)
+        (Assert.equals null objWith.notAField)))
+
 (function _testClamp []
     (let [&mut bigValue 12
             &mut smallValue 3]

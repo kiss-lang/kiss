@@ -453,6 +453,10 @@ class BasicTestCase extends Test {
         _testStreamRecording();
     }
 
+    function testObjectWith() {
+        _testObjectWith();
+    }
+
     var aNullToPrint = null;
 }
 
