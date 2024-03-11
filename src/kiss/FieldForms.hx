@@ -181,23 +181,29 @@ class FieldForms {
                                     };
 
                                     var additionalArgsName = 'additionalArgs${uuid.Uuid.v4().replace("-", "_")}';
-                                    var isOpt = true;
+                                    var objectIsOpt = true;
                                     var fields:Array<Field> = [];
                                     for (argName => arg in argMap) {
-                                        if (arg.opt == null || arg.opt == false)
-                                            isOpt = false;
+                                        var type = arg.type;
+                                        var meta = arg.meta;
+                                        if (meta == null) meta = [];
+                                        if (arg.opt == null || arg.opt == false) {
+                                            objectIsOpt = false;
+                                        } else {
+                                            meta.push({pos: wholeExp.macroPos(), name: ":optional"});
+                                        }
                                         fields.push({
                                             name: argName,
                                             pos: wholeExp.macroPos(),
-                                            meta: arg.meta,
-                                            kind: FVar(arg.type, null)
+                                            meta: meta,
+                                            kind: FVar(type, null)
                                         });
                                         callExpArgs[argIndexMap[argName]] = macro $i{additionalArgsName}?.$argName;
                                     }
                                     var additionalArgType = TAnonymous(fields);
                                     newArgs.push({
                                         name: additionalArgsName,
-                                        opt: isOpt,
+                                        opt: objectIsOpt,
                                         type: additionalArgType
                                     });
 
