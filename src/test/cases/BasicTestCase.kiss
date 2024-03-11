@@ -991,3 +991,17 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
         (Assert.equals " , , , ," (stream.expect "" ->(stream.takeWhileOneOf (.split ", " ""))))
         (Assert.equals "ababababab" (stream.expect "" ->(stream.takeWhileOneOf (.split "ab" ""))))
         (Assert.equals "cab.ccab" (stream.expect "" ->(stream.takeWhileOneOf ["cab" ".c"])))))
+
+(function funcWithMultipleArgs [:Int num :String str :Float num2]
+    (+ str (+ num num2)))
+
+(function :Void voidFuncWithMultipleArgs [:Int num :String str :Float num2]
+    (+ str (+ num num2)))
+
+(redefineWithObjectArgs funcWithMultipleArgs funcWithObjectArgs [str])
+(redefineWithObjectArgs voidFuncWithMultipleArgs voidFuncWithObjectArgs [str])
+
+(function _testRedefineWithObjectArgs []
+    (voidFuncWithObjectArgs "hey" (object num 5 num2 0.5))
+    (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num 5 num2 0.5)))
+    (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num2 4.5 num 1))))

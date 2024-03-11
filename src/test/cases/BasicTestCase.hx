@@ -457,6 +457,10 @@ class BasicTestCase extends Test {
         _testObjectWith();
     }
 
+    function testRedefineWithObjectArgs() {
+        _testRedefineWithObjectArgs();
+    }
+
     var aNullToPrint = null;
 }
 
