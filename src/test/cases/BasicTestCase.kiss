@@ -998,10 +998,15 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
 (function :Void voidFuncWithMultipleArgs [:Int num :String str :Float num2]
     (+ str (+ num num2)))
 
+(function funcWithMultipleOptArgs [&opt :Int num :String str :Float num2]
+    null)
+
 (redefineWithObjectArgs funcWithMultipleArgs funcWithObjectArgs [str])
 (redefineWithObjectArgs voidFuncWithMultipleArgs voidFuncWithObjectArgs [str])
+(redefineWithObjectArgs funcWithMultipleOptArgs funcWithOptObjectArgs [])
 
 (function _testRedefineWithObjectArgs []
     (voidFuncWithObjectArgs "hey" (object num 5 num2 0.5))
     (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num 5 num2 0.5)))
-    (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num2 4.5 num 1))))
+    (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num2 4.5 num 1)))
+    (Assert.equals null (funcWithOptObjectArgs)))

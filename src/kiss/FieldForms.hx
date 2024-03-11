@@ -25,6 +25,8 @@ class FieldForms {
         funcOrMethod("function", k);
         funcOrMethod("method", k);
 
+        k.doc("redefineWithObjectArgs", 2, 3, '(redefineWithObjectArgs <function or method name> <new function or method name> <optional [<preserved list args...>]>)');
+        k.fieldForms["redefineWithObjectArgs"] = redefineWithObjectArgs;
     }
 
     static function fieldAccess(formName:String, fieldName:String, nameExp:ReaderExp, ?access:Array<Access>) {
@@ -127,6 +129,105 @@ class FieldForms {
                 kind: varOrPropKind(args), 
                 pos: wholeExp.macroPos()
             } : Field);
+        }
+    }
+
+    static function redefineWithObjectArgs(wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState):Field {
+        switch (args[0].def) {
+            case Symbol(field):
+                var originalFunction = k.fieldDict[field];
+
+                if (originalFunction == null) {
+                    throw KissError.fromExp(wholeExp, 'Function or method $field does not exist to be redefined');
+                }
+
+                switch (args[1].def) {
+                    case Symbol(newFieldName):
+                        var newField = {
+                            pos: wholeExp.macroPos(),
+                            name: newFieldName,
+                            meta: originalFunction.meta,
+                            access: originalFunction.access,
+                            kind: FFun(switch(originalFunction.kind) {
+                                case FFun({ret: ret, params: params, args: originalArgs}):
+                                    var argIndexMap = new Map<String,Int>();
+                                    var argMap = new Map<String,Null<FunctionArg>>();
+                                    for (idx in 0... originalArgs.length) {
+                                        var originalArg = originalArgs[idx];
+                                        argIndexMap[originalArg.name] = idx;
+                                        argMap[originalArg.name] = originalArg;
+                                    }
+
+                                    var callExpArgs:Array<Expr> = [for (_ in 0... originalArgs.length) macro null];
+                                    var newArgs = if (args.length > 2) {
+                                        [for (argSymbol in Helpers.argList(args[2], "redefineWithObjectArgs"))
+                                            switch (argSymbol.def) {
+                                                case Symbol(argName):
+                                                    if (!argMap.exists(argName)) {
+                                                        throw KissError.fromExp(argSymbol, '$argName is not an argument in the original function or method $field');
+                                                    }
+                                                    var arg = argMap[argName];
+                                                    var index = argIndexMap[argName];
+                                                    argMap.remove(argName);
+                                                    argIndexMap.remove(argName);
+                                                    callExpArgs[index] = macro $i{argName};
+                                                    arg;
+                                                default:
+                                                    throw KissError.fromExp(argSymbol, 'arguments in an arg list for (redefineWithObjectArgs...) should be plain symbols matching arg names of the original function or method');
+                                            }
+                                        ];
+                                    } else {
+                                        []; 
+                                    };
+
+                                    var additionalArgsName = 'additionalArgs${uuid.Uuid.v4().replace("-", "_")}';
+                                    var isOpt = true;
+                                    var fields:Array<Field> = [];
+                                    for (argName => arg in argMap) {
+                                        if (arg.opt == null || arg.opt == false)
+                                            isOpt = false;
+                                        fields.push({
+                                            name: argName,
+                                            pos: wholeExp.macroPos(),
+                                            meta: arg.meta,
+                                            kind: FVar(arg.type, null)
+                                        });
+                                        callExpArgs[argIndexMap[argName]] = macro $i{additionalArgsName}?.$argName;
+                                    }
+                                    var additionalArgType = TAnonymous(fields);
+                                    newArgs.push({
+                                        name: additionalArgsName,
+                                        opt: isOpt,
+                                        type: additionalArgType
+                                    });
+
+                                    var exp = macro $i{field}($a{callExpArgs});
+                                    switch (ret) {
+                                        case TPath({pack:[], name: "Void"}):
+                                        default:
+                                            exp = macro return $exp;
+                                    }
+
+                                    {
+                                        ret: ret,
+                                        params: params,
+                                        args: newArgs,
+                                        expr: exp
+                                    };
+                                default:
+                                    throw KissError.fromExp(args[0], '$field is not a function or method');
+                            })
+                        };
+
+                        return newField;
+
+                    default:
+                        throw KissError.fromExp(wholeExp, "The second argument to (redefineWithObjectArgs...) should be a plain symbol of a new function or method name");
+                }
+
+
+            default:
+                throw KissError.fromExp(args[0], "The first argument to (redefineWithObjectArgs...) should be a plain symbol of a function or method name");
         }
     }
 
