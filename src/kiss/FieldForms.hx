@@ -18,26 +18,13 @@ using StringTools;
 typedef FieldFormFunction = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> Field;
 
 class FieldForms {
-    public static function addBuiltins(k:KissState) {
-        var map:Map<String, FieldFormFunction> = [];
-
-        function renameAndDeprecate(oldName:String, newName:String) {
-            var form = map[oldName];
-            map[oldName] = (wholeExp, args, k) -> {
-                KissError.warnFromExp(wholeExp, '$oldName has been renamed to $newName and deprecated');
-                form(wholeExp, args, k);
-            }
-            map[newName] = form;
-            k.formDocs[newName] = k.formDocs[oldName];
-        }
-
+    public static function addBuiltins(k:KissState):Void {
         varOrProperty("var", k);
         varOrProperty("prop", k);
 
         funcOrMethod("function", k);
         funcOrMethod("method", k);
 
-        return map;
     }
 
     static function fieldAccess(formName:String, fieldName:String, nameExp:ReaderExp, ?access:Array<Access>) {
