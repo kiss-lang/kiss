@@ -1579,6 +1579,15 @@ class Macros {
             ]);
         }
 
+        
+        k.doc("array", 1, null, "(array <element Type> <elements...>)");
+        macros["array"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            var arraySymbol = b.symbol();
+            var typeName = Prelude.symbolNameValue(Helpers.expandTypeSymbol(args[0], k));
+
+            b.let([b.typed('Array<${typeName}>', arraySymbol), b.list([])], [for (arg in args.slice(1)) b.call(b.field("push", arraySymbol), [arg])].concat([arraySymbol]));
+        };
         return macros;
     }
 

@@ -1010,3 +1010,8 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num 5 num2 0.5)))
     (Assert.equals "hey5.5" (funcWithObjectArgs "hey" (object num2 4.5 num 1)))
     (Assert.equals null (funcWithOptObjectArgs)))
+
+(function _testTypedArrayMacro []
+    (let [a (array Float 1 1.5 2)]
+        (Assert.isTrue (Std.isOfType a Array))
+        (Assert.isTrue (Std.isOfType (first a) Float))))

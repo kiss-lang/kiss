@@ -460,6 +460,10 @@ class BasicTestCase extends Test {
     function testRedefineWithObjectArgs() {
         _testRedefineWithObjectArgs();
     }
+    
+    function testTypedArrayMacro() {
+        _testTypedArrayMacro();
+    }
 
     var aNullToPrint = null;
 }
