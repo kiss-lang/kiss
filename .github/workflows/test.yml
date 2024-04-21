@@ -10,7 +10,7 @@ jobs:
         os: [ubuntu-latest]
         node-version: ['14']
         python-version: ['3.x']
-        test-target: 
+        test-target:
           # HAXE TARGETS
           - cpp
           # - cs
@@ -18,9 +18,16 @@ jobs:
           - js
           - nodejs
           - py
+          - "lua 5.1"
+          - "lua 5.2"
+          - "lua 5.3"
+          - "lua 5.4"
+          - "luajit 2.0"
+          - "luajit 2.1"
     runs-on: ${{ matrix.os }}
     env:
       CI_OS_NAME: ${{ matrix.os }}
+      LUA: ${{ matrix.test-target }}
     steps:
       - uses: actions/checkout@v3
       # Set up Kiss runtimes:
@@ -41,6 +48,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
         if: matrix.test-target == 'py'
+
+      # lua
+      - run: pip install --user hererocks && hererocks env --$LUA -rlatest && source env/bin/activate
+        if: contains(matrix.test-target, "lua")
 
       # mono
       - run: brew install mono || brew link --overwrite mono
