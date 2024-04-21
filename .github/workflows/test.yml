@@ -69,6 +69,9 @@ jobs:
 
       # run target test:
       - run: echo "KISS_TARGET=${{ matrix.test-target }}" >> $GITHUB_ENV
+        if: !contains(matrix.test-target, 'lua')
+      - run: echo "KISS_TARGET=lua" >> $GITHUB_ENV
+        if: contains(matrix.test-target, 'lua')
       - run: ./test.sh
         shell: bash
       
