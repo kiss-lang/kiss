@@ -51,7 +51,7 @@ jobs:
 
       # lua
       - run: pip install --user hererocks && hererocks env --$LUA -rlatest && source env/bin/activate
-        if: contains(matrix.test-target, "lua")
+        if: contains(matrix.test-target, 'lua')
 
       # mono
       - run: brew install mono || brew link --overwrite mono
