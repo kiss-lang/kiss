@@ -67,11 +67,14 @@ jobs:
           sudo apt install mono-devel
         if: matrix.os == 'ubuntu-latest' && matrix.test-target == 'cs'
 
-      # run target test:
+      # run target test (not lua):
       - run: echo "KISS_TARGET=${{ matrix.test-target }}" >> $GITHUB_ENV
         if: contains(matrix.test-target, 'lua') == false
+      - run: ./test.sh
+        if: contains(matrix.test-target, 'lua') == false
+
+      # run target test (lua):
       - run: echo "KISS_TARGET=lua" >> $GITHUB_ENV
         if: contains(matrix.test-target, 'lua')
-      - run: source env/bin/activate || ./test.sh
-        shell: bash
-
+      - run: source env/bin/activate && ./test.sh
+        if: contains(matrix.test-target, 'lua')
