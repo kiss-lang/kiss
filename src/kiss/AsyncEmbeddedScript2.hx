@@ -460,7 +460,7 @@ class AsyncEmbeddedScript2 {
             Kiss.measure('Compiling kiss: $scriptFile', () -> {
             #end
                 function process(nextExp) {
-                    #if kissCache
+                    #if (kissCache && !lua)
                     var cacheKey = Reader.toString(nextExp.def);
                     if (cache.exists(cacheKey)) {
                         hscriptInstructions[Std.string(commandList.length)] = cache[cacheKey];
