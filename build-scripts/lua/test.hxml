@@ -1,2 +1,2 @@
---lua main.lua
---cmd lua main.lua
+--lua bin/lua/main.lua
+--cmd lua bin/lua/main.lua
