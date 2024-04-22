@@ -50,7 +50,7 @@ jobs:
         if: matrix.test-target == 'py'
 
       # lua
-      - run: pip install --user hererocks && hererocks env --$LUA -rlatest
+      - run: pip install --user hererocks && hererocks env --$LUA -rlatest && source env/bin/activate && luarocks install lrexlib-pcre2 && luarocks install hx-lua-simdjson
         if: contains(matrix.test-target, 'lua')
 
       # mono
