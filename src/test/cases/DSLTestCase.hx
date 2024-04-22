@@ -8,6 +8,7 @@ import kiss.FuzzyMap;
 import kiss.FuzzyMapTools;
 
 class DSLTestCase extends Test {
+    #if !lua
     function testAsync() {
         var script = new AsyncDSLScript();
         script.run();
@@ -43,6 +44,7 @@ class DSLTestCase extends Test {
         Assert.isTrue(scriptWithAutoCC.finished);
         Assert.isFalse(scriptWithoutAutoCC.finished);
     }
+    #end
 }
 
 @:build(kiss.AsyncEmbeddedScript2.build("", "DSL.kiss", "AsyncDSLScript.dsl"))
