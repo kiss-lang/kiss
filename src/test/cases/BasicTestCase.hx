@@ -335,7 +335,7 @@ class BasicTestCase extends Test {
     }
 
     function testEval() {
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !lua)
         _testEvalStatic();
         _testEval();
         #else
@@ -424,7 +424,7 @@ class BasicTestCase extends Test {
         _testTypeCase();
     }
 
-    #if (sys || hxnodejs)
+    #if ((sys || hxnodejs) && !lua)
     function testTryProcess() {
         // tryProcess returns null on failure:
         Assert.equals(null, Prelude.tryProcess("_ThisCoMMaNDWillSURElYFaiLLLLLL", [], error->{return;}));

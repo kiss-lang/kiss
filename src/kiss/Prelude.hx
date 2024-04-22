@@ -47,6 +47,7 @@ enum KissTarget {
     NodeJS;
     Python;
     Macro;
+    Lua;
 }
 
 class Prelude {
