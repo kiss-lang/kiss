@@ -50,7 +50,7 @@ jobs:
         if: matrix.test-target == 'py'
 
       # lua
-      - run: pip install --user hererocks && hererocks env --$LUA -rlatest && source env/bin/activate
+      - run: pip install --user hererocks && hererocks env --$LUA -rlatest
         if: contains(matrix.test-target, 'lua')
 
       # mono
@@ -72,6 +72,6 @@ jobs:
         if: contains(matrix.test-target, 'lua') == false
       - run: echo "KISS_TARGET=lua" >> $GITHUB_ENV
         if: contains(matrix.test-target, 'lua')
-      - run: ./test.sh
+      - run: source env/bin/activate || ./test.sh
         shell: bash
-      
+
