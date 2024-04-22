@@ -373,7 +373,7 @@ class AsyncEmbeddedScript2 {
 
         var hscriptInstructions:Map<String,String> = [];
         var cache:Map<String,String> = [];
-        #if kissCache
+        #if (kissCache && !lua)
         var cacheFile = scriptFile.withoutExtension().withoutDirectory() + ".cache.json";
         if (sys.FileSystem.exists(cacheFile)) {
             var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(cacheFile));
@@ -519,7 +519,7 @@ class AsyncEmbeddedScript2 {
                             $expr;
                         };
                         // If the expression didn't change the KissState when macroExpanding, it can be cached
-                        #if kissCache
+                        #if (kissCache && !lua)
                         if (!stateChanged) {
                             var expr = Kiss._try(()->Kiss.readerExpToHaxeExpr(nextExp, k.forHScript()));
                             cache[cacheKey] = expr.toString();
@@ -559,7 +559,7 @@ class AsyncEmbeddedScript2 {
             })
         });
 
-        #if kissCache
+        #if (kissCache && !lua)
         sys.io.File.saveContent(cacheFile, haxe.Json.stringify(cache));
         sys.io.File.saveContent(hscriptInstructionFile, haxe.Json.stringify(hscriptInstructions));
         #end
