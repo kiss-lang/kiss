@@ -1,3 +1,2 @@
--D lua
 --lua bin/lua/main.lua
 --cmd lua bin/lua/main.lua
