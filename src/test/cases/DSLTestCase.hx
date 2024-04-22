@@ -11,7 +11,9 @@ class DSLTestCase extends Test {
     function testAsync() {
         var script = new AsyncDSLScript();
         script.run();
+        #if !lua
         Assert.isFalse(script.ranHscriptInstruction);
+        #end
         Assert.isTrue(script.wholeScriptDone);
     }
 
@@ -21,8 +23,10 @@ class DSLTestCase extends Test {
         script.run();
         var script2 = new AsyncDSLScriptThatWillCache2();
         script2.run();
+        #if !lua
         Assert.isTrue(script.ranHscriptInstruction || script2.ranHscriptInstruction);
         Assert.isFalse(script.ranHscriptInstruction && script2.ranHscriptInstruction);
+        #end
         Assert.isTrue(script.wholeScriptDone);
         Assert.isTrue(script2.wholeScriptDone);
     }

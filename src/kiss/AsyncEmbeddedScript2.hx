@@ -244,11 +244,13 @@ class AsyncEmbeddedScript2 {
         }
 
         runWithErrorChecking(() -> {
+            #if !lua
             if (hscriptInstructions.exists(instructionPointer)) {
                 runHscriptInstruction(instructionPointer, skipping, continuation);
-            } else {
-                instructions[instructionPointer](this, skipping, continuation);
+                return;
             }
+            #end
+            instructions[instructionPointer](this, skipping, continuation);
         });
 
         if (tryCallNextWithTailRecursion) {
