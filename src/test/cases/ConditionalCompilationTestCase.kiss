@@ -22,7 +22,8 @@
         (interp "Haxe")
         (hxnodejs "NodeJS")
         (js "JavaScript")
-        (python "Python")))
+        (python "Python")
+        (lua "Lua")))
 
 (function _testCase []
     (#case var1ForCase

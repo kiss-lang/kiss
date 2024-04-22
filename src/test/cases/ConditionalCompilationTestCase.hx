@@ -47,6 +47,8 @@ class ConditionalCompilationTestCase extends Test {
         Assert.equals("JavaScript", targetLanguage);
         #elseif python
         Assert.equals("Python", targetLanguage);
+        #elseif lua
+        Assert.equals("Lua", targetLanguage);
         #end
     }
 
