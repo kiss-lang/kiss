@@ -86,7 +86,7 @@ class FieldForms {
     }
 
     static function varOrProperty(formName:String, k:KissState) {
-        k.doc(formName, 1, 3, '($formName <optional &mut> <optional :Type> <name> <optional value>)');
+        k.doc(formName, 1, 2, '($formName <optional &mut> <optional :Type> <name> <optional value>)');
         k.fieldForms[formName] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var name = Helpers.varName(formName, args[0]);
             checkPrintFieldsCalledWarning(name, wholeExp, k);
