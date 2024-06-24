@@ -114,17 +114,26 @@ class SpecialForms {
                 throw KissError.fromExp(wholeExp, "(object <field bindings...>) must have an even number of arguments");
             }
             EObjectDecl([
-                for (pair in args.groups(2))
-                    {
-                        quotes: Unquoted,
-                        field: switch (pair[0].def) {
-                            case Symbol(name) if (!name.contains(".")): name;
-                            case TypedExp(_,
-                                {pos: _, def: Symbol(_)}): throw KissError.fromExp(pair[0], "type specification on anonymous objects will be ignored");
-                            default: throw KissError.fromExp(pair[0], "first expression in anonymous object field binding should be a plain symbol");
-                        },
-                        expr: k.convert(pair[1])
+                for (pair in args.groups(2)) {
+                    switch (pair[0].def) {
+                        case Symbol(name) if (!name.contains(".")):
+                            {
+                                field: name,
+                                quotes: Unquoted,
+                                expr: k.convert(pair[1])
+                            };
+                        case StrExp(s):
+                            {
+                                field: s,
+                                quotes: Quoted,
+                                expr: k.convert(pair[1])
+                            };
+                        case TypedExp(_, {pos: _, def: Symbol(_)}):
+                            throw KissError.fromExp(pair[0], "type specification on anonymous object fields will be ignored");
+                        default:
+                            throw KissError.fromExp(pair[0], "first expression in anonymous object field binding should be a plain symbol or a string");
                     }
+                }
             ]).withMacroPosOf(wholeExp);
         };
 
