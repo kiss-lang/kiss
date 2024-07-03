@@ -531,6 +531,7 @@ class Helpers {
         // plus macro-specific things.
         var interp = new KissInterp();
         interp.variables.set("read", Reader._assertRead.bind(_, k));
+        interp.variables.set("readOr", Reader._readOr.bind(_, k));
         interp.variables.set("readExpArray", Reader._readExpArray.bind(_, _, k));
         interp.variables.set("ReaderExp", ReaderExpDef);
         interp.variables.set("nextToken", Reader.nextToken.bind(_, "a token"));

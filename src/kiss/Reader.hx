@@ -327,6 +327,15 @@ class Reader {
         }
     }
 
+    static function _readOr(stream:Stream, k:KissState, defaultExp:ReaderExp):ReaderExp {
+        return switch (_read(stream, k)) {
+            case Some(exp):
+                exp;
+            case None:
+                defaultExp;
+        }
+    }
+
     static var nestedReadExpArrayStartPositions = [];
     static var readExpArrayStartPositions = [];
 
