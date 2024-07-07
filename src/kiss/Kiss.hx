@@ -448,7 +448,7 @@ class Kiss {
                 k.addContextFields(useClassFields);
                 k.loadingDirectory = loadingDirectory;
 
-                var topLevelBegin = load(kissFile, k);
+                var topLevelBegin = load(kissFile, k, null, null, null, expectedError);
 
                 if (topLevelBegin != null) {
                     // If no main function is defined manually, Kiss expressions at the top of a file will be put in a main function.
@@ -492,7 +492,7 @@ class Kiss {
 
     static final SIGNIFICANT_TIME_SPENT = 0.05;
 
-    public static function load(kissFile:String, k:KissState, ?loadingDirectory:String, loadAllExps = false, ?fromExp:ReaderExp):Null<ReaderExp> {
+    public static function load(kissFile:String, k:KissState, ?loadingDirectory:String, loadAllExps = false, ?fromExp:ReaderExp, ?expectedError:EType):Null<ReaderExp> {
         if (loadingDirectory == null)
             loadingDirectory = k.loadingDirectory;
 
@@ -532,7 +532,7 @@ class Kiss {
 
             // readerExpToHaxeExpr must be called to process readermacro, alias, and macro definitions
             macroUsed = false;
-            var expr = _try(()->readerExpToHaxeExpr(nextExp, k));
+            var expr = _try(()->readerExpToHaxeExpr(nextExp, k), expectedError);
 
             // exps in the loaded file that actually become haxe expressions can be inserted into the
             // file that loaded them at the position (load) was called.
