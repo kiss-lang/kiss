@@ -1,0 +1,2 @@
+(let [l ->[arg, arg2, arg3] null]
+    (l 1 2 3))

@@ -251,7 +251,7 @@ class Reader {
     }
 
     public static final whitespace = [" ", "\t", "\n"];
-    public static final terminators = [")", "]", "}", '"', "/*"].concat(whitespace);
+    public static final terminators = [")", "]", "}", '"', "/*", ","].concat(whitespace);
 
     public static function nextToken(stream:Stream, expect:String, allowEmptyString = false) {
         switch (stream.takeUntilOneOf(terminators, true)) {
