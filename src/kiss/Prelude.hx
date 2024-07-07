@@ -542,11 +542,22 @@ class Prelude {
         return switch (s.def) {
             case Symbol(name): name;
             case TypedExp(_, innerExp) if (allowTyped): symbolNameValue(innerExp, false); // Meta must always precede type annotation
-            case MetaExp(_, innerExp) if (allowMeta): symbolNameValue(innerExp, allowTyped, false); // TODO will more than one meta on the same expression be necessary?
+            case MetaExp(_, innerExp) if (allowMeta): symbolNameValue(innerExp, allowTyped, false); // TODO will more than one meta on the same expression ever be necessary?
             default:
                 var allowed = "a plain symbol";
                 if (allowTyped) allowed += " or a :Typed symbol";
                 if (allowMeta) allowed += " or a &meta symbol";
+                throw expected(s, allowed);
+        };
+    }
+
+    public static function typeNameValue(s:ReaderExp, allowMeta:Null<Bool> = false):String {
+        return switch (s.def) {
+            case TypedExp(type, _): type;
+            case MetaExp(_, innerExp) if (allowMeta): typeNameValue(innerExp, false); // TODO will more than one meta on the same expression ever be necessary?
+            default:
+                var allowed = "a :Typed symbol";
+                if (allowMeta) allowed += " or a &meta :Typed symbol";
                 throw expected(s, allowed);
         };
     }

@@ -121,6 +121,8 @@ class Kiss {
                 "fsMemoize" => Symbol("Prelude.fsMemoize"),
                 "symbolName" => Symbol("Prelude.symbolName"),
                 "symbolNameValue" => Symbol("Prelude.symbolNameValue"),
+                "typeNameValue" => Symbol("Prelude.typeNameValue"),
+                "typeName" => Symbol("Prelude.typeNameValue"),
                 "symbol" => Symbol("Prelude.symbol"),
                 "expList" => Symbol("Prelude.expList"),
                 "map" => Symbol("Lambda.map"),
