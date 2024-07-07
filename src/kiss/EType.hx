@@ -7,4 +7,5 @@ enum EType {
     EException(message:String);
     EExpected(e:EType);
     EUnexpected(e:Dynamic);
+    EAny;
 }

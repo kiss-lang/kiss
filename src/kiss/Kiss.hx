@@ -234,6 +234,8 @@ class Kiss {
                 Sys.stderr().writeString(err + "\n");
             }
             switch (expectedError) {
+                case EAny:
+                    throw EExpected(EAny);
                 case EStream(message) if (message == err.message):
                     throw EExpected(expectedError);
                 case null:
@@ -249,6 +251,8 @@ class Kiss {
                 Sys.stderr().writeString(err + "\n");
             }
             switch (expectedError) {
+                case EAny:
+                    throw EExpected(EAny);
                 case EKiss(message) if (message == err.message):
                     throw EExpected(expectedError);
                 case null:
@@ -266,6 +270,8 @@ class Kiss {
                 Sys.stderr().writeString(Stream.toPrint(err.position) + ': Unmatched ${err.type}\n');
             }
             switch (expectedError) {
+                case EAny:
+                    throw EExpected(EAny);
                 case EUnmatchedBracket(type) if (type == err.type):
                     throw EExpected(expectedError);
                 case null:
@@ -284,6 +290,8 @@ class Kiss {
                 Sys.stderr().writeString(err.stack.toString() + "\n");
             }
             switch (expectedError) {
+                case EAny:
+                    throw EExpected(EAny);
                 case EException(message) if (message == err.message):
                     throw EExpected(expectedError);
                 case null:
