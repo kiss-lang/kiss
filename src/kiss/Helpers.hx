@@ -765,6 +765,7 @@ class Helpers {
             set: (v:ReaderExp, value:ReaderExp) -> callSymbol("set", [v, value]),
             let: let,
             objectWith: objectWith,
+            expFromDef: (def:ReaderExpDef) -> def.withPosOf(posRef),
             // Only use within assertion macros
             throwAssertionError: () -> {
                 var usage = "throwAssertionError can only be used in a builder of an assertion macro";
