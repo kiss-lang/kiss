@@ -582,6 +582,8 @@ class Reader {
 
     public static function toString(exp:ReaderExpDef) {
         return switch (exp) {
+            case null:
+                '<NULL DEF!>';
             case CallExp(func, args):
                 // (f a1 a2...)
                 var str = '(' + func.def.toString();
