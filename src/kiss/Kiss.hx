@@ -26,6 +26,7 @@ using kiss.Helpers;
 using kiss.Reader;
 using tink.MacroApi;
 using haxe.io.Path;
+using StringTools;
 
 typedef ExprConversion = (ReaderExp) -> Expr;
 
@@ -286,6 +287,8 @@ class Kiss {
                     printErr();
                     throw EUnexpected(err);
             }
+        } catch (err:EType) {
+            throw err;
         } catch (err:Exception) {
             function printErr() {
                 Sys.stderr().writeString("Error: " + err.message + "\n");
@@ -698,6 +701,9 @@ class Kiss {
                 var substitution = k.identAliases[alias].withPosOf(exp);
                 if (macroExpandOnly) Left(substitution) else macroExpandAndConvert(substitution, k, false);
             case Symbol(name) if (!macroExpandOnly):
+                if (name.endsWith(",")) {
+                    throw KissError.fromExp(exp, "trailing comma on symbol");
+                }
                 try {
                     Right(Context.parse(name, exp.macroPos()));
                 } catch (err:haxe.Exception) {
