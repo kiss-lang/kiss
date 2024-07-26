@@ -275,13 +275,23 @@ class Macros {
         k.doc("#value", 1, 1, '(#value "<name>")');
         macros["#value"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
-            b.str(Context.definedValue(compileTimeResolveToString("The only argument to (#value...)", "a compiler flag's name", args[0], k)));
+            var key = compileTimeResolveToString("The only argument to (#value...)", "a compiler flag's name", args[0], k);
+            var value = Context.definedValue(key);
+            if (value == null) {
+                throw KissError.fromExp(wholeExp, 'Compiler value "$key" is not defined');
+            }
+            b.str(value);
         };
 
         k.doc("#symbol", 1, 1, '(#symbol "<name>")');
         macros["#symbol"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
-            b.symbol(Context.definedValue(compileTimeResolveToString("The only argument to (#symbol...)", "a compiler flag's name", args[0], k)));
+            var key = compileTimeResolveToString("The only argument to (#value...)", "a compiler flag's name", args[0], k);
+            var value = Context.definedValue(key);
+            if (value == null) {
+                throw KissError.fromExp(wholeExp, 'Compiler value $key is not defined');
+            }
+            b.symbol(value);
         };
 
         k.doc("or", 1, null, "(or <v1> <values...>)");
