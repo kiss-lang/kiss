@@ -640,24 +640,29 @@ class Helpers {
         return e;
     }
 
+    static function _unquoteListArray(l:ReaderExp, innerRunAtCompileTime:(ReaderExp)->Dynamic) {
+        var listToInsert:Dynamic = innerRunAtCompileTime(l);
+        // listToInsert could be either an array (from &rest) or a ListExp (from [list syntax])
+        var newElements:Array<ReaderExp> = if (Std.isOfType(listToInsert, Array)) {
+            listToInsert;
+        } else {
+            switch (listToInsert.def) {
+                case ListExp(elements):
+                    elements;
+                default:
+                    throw KissError.fromExp(listToInsert, ",@ can only be used with lists");
+            };
+        }
+        return newElements;
+    }
+
     static function evalUnquoteLists(l:Array<ReaderExp>, innerRunAtCompileTime:(ReaderExp)->Dynamic):Array<ReaderExp> {
         var idx = 0;
         while (idx < l.length) {
             switch (l[idx].def) {
                 case UnquoteList(exp):
                     l.splice(idx, 1);
-                    var listToInsert:Dynamic = innerRunAtCompileTime(exp);
-                    // listToInsert could be either an array (from &rest) or a ListExp (from [list syntax])
-                    var newElements:Array<ReaderExp> = if (Std.isOfType(listToInsert, Array)) {
-                        listToInsert;
-                    } else {
-                        switch (listToInsert.def) {
-                            case ListExp(elements):
-                                elements;
-                            default:
-                                throw KissError.fromExp(listToInsert, ",@ can only be used with lists");
-                        };
-                    };
+                    var newElements = _unquoteListArray(exp, innerRunAtCompileTime);
                     for (el in newElements) {
                         l.insert(idx++, el);
                     }
@@ -673,6 +678,11 @@ class Helpers {
         var def = switch (exp.def) {
             case Symbol(_) | StrExp(_) | RawHaxe(_) | RawHaxeBlock(_):
                 exp.def;
+            // Crazy edge case: (,@list <exps...>)
+            case CallExp({def:UnquoteList(listExp)}, callArgs):
+                var newElements = _unquoteListArray(listExp, innerRunAtCompileTime);
+                var wholeList = newElements.concat(callArgs).map(recurse);
+                CallExp(wholeList.shift(), wholeList);
             case CallExp(func, callArgs):
                 CallExp(recurse(func), evalUnquoteLists(callArgs, innerRunAtCompileTime).map(recurse));
             case ListExp(elements):
