@@ -251,7 +251,7 @@ class AsyncEmbeddedScript2 {
             }
             #end
             instructions[instructionPointer](this, skipping, continuation);
-        });
+        }, continuation);
 
         if (tryCallNextWithTailRecursion) {
             nextCalledWithTailRecursion = true;
@@ -300,7 +300,7 @@ class AsyncEmbeddedScript2 {
 
     public var printCurrentInstruction = true;
 
-    public function runWithErrorChecking(process:Void->Void) {
+    public function runWithErrorChecking(process:Void->Void, ?cc:Continuation2) {
         try {
             process();
         } catch (e:haxe.Exception) {
@@ -309,12 +309,22 @@ class AsyncEmbeddedScript2 {
             Prelude.print("ERROR MESSAGE:");
             Prelude.printStr(e.message);
             if (onError != null) {
-                onError(e);
+                onError(e, () -> {
+                    #if (sys || hxnodejs)
+                    Sys.exit(1);
+                    #end
+                    throw e;
+                }, if (cc != null) {
+                    cc;
+                } else {
+                    ()->{trace("no-op cc");};
+                });
+            } else {
+                #if (sys || hxnodejs)
+                Sys.exit(1);
+                #end
+                throw e;
             }
-            #if (sys || hxnodejs)
-            Sys.exit(1);
-            #end
-            throw e;
         }
     }
 
@@ -359,7 +369,8 @@ class AsyncEmbeddedScript2 {
         }
     }
 
-    public var onError:Any->Void;
+    // function onError(error:Any, quit:Continuation2, continue:Continuation2) {}
+    public var onError:(Any,Continuation2,Continuation2)->Void;
 
     #if macro
     public static function build(dslHaxelib:String, dslFile:String, scriptFile:String):Array<Field> {
@@ -420,14 +431,17 @@ class AsyncEmbeddedScript2 {
         };
 
         // Or if you're subclassing this before implementing your script, add this macro to the subclass dsl:
-        //  (defMacro makeCC [&body b]
-        //      `->:Void [] (runWithErrorChecking ->:Void {,@b}))
+        //  (defMacro makeCC [errorCC &body b]
+        //      `->:Void [] (runWithErrorChecking ->:Void {,@b} errorCC))
 
         k.macros["makeCC"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var b = wholeExp.expBuilder();
+            wholeExp.checkNumArgs(2, null, "(makeCC <errorCC> <body...>)");
+            var errorCC = args.shift();
             b.callSymbol("lambda", [b.list([]),
                 b.callSymbol("runWithErrorChecking", [
-                    b.callSymbol("lambda", [b.list([])].concat(args))
+                    b.callSymbol("lambda", [b.list([])].concat(args)),
+                    errorCC
                 ])]);
         };
 
