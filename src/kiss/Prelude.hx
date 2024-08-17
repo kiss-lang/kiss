@@ -561,6 +561,13 @@ class Prelude {
                 throw expected(s, allowed);
         };
     }
+    
+    public static function metaNameValue(s:ReaderExp):String {
+        return switch (s.def) {
+            case MetaExp(meta, _): meta;
+            default: "";
+        };
+    }
 
     public static function uuid() {
         return Uuid.v4().toShort();

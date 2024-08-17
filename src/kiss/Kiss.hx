@@ -123,6 +123,7 @@ class Kiss {
                 "symbolName" => Symbol("Prelude.symbolName"),
                 "symbolNameValue" => Symbol("Prelude.symbolNameValue"),
                 "typeNameValue" => Symbol("Prelude.typeNameValue"),
+                "metaNameValue" => Symbol("Prelude.metaNameValue"),
                 "typeName" => Symbol("Prelude.typeNameValue"),
                 "symbol" => Symbol("Prelude.symbol"),
                 "expList" => Symbol("Prelude.expList"),
