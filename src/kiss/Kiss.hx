@@ -509,7 +509,32 @@ class Kiss {
             ];
             zippedInfo.sort((a, b) -> Std.int(b[3] * 1000) - Std.int(a[3] * 1000));
             for (info in zippedInfo) {
-                Sys.println('${info[0]}: ${info[1]} x ${info[2]} = ${info[3]}');
+                var label = info[0];
+                var averageTime = info[1];
+                var usageCount = info[2];
+                var timeSpent = info[3];
+                var averageEgregious = averageTime >= SIGNIFICANT_AVERAGE_TIME * EGREGIOUS;
+                var totalEgregious = timeSpent >= SIGNIFICANT_TIME_SPENT * EGREGIOUS;
+                
+                if (averageEgregious || totalEgregious) {
+                    Sys.print(Prelude.ANSI.RED);
+                }
+                Sys.print('${info[0]}: ');
+                Sys.print(Prelude.ANSI.RESET);
+                
+                if (averageEgregious) {
+                    Sys.print(Prelude.ANSI.RED);
+                }
+                Sys.print('${info[1]} x ');
+                Sys.print(Prelude.ANSI.RESET);
+
+                Sys.print('${usageCount} = ');
+                
+                if (totalEgregious) {
+                    Sys.print(Prelude.ANSI.RED);
+                }
+                Sys.println(timeSpent);
+                Sys.print(Prelude.ANSI.RESET);
             }
 
             #end
@@ -520,6 +545,8 @@ class Kiss {
 
     static final SIGNIFICANT_AVERAGE_TIME = 0.1;
     static final SIGNIFICANT_TIME_SPENT = 1;
+    // EGREGIOUS * SIGNIFICANT -> print in red
+    static final EGREGIOUS = 15;
 
     public static function load(kissFile:String, k:KissState, ?loadingDirectory:String, loadAllExps = false, ?fromExp:ReaderExp, ?expectedError:EType):Null<ReaderExp> {
         if (loadingDirectory == null)
