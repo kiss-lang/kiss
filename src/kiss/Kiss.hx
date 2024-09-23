@@ -491,11 +491,25 @@ class Kiss {
             });
             #elseif (profileKiss > 1)
             });
-            for (label => timeSpent in profileAggregates) {
-                var usageCount = profileUsageCounts[label];
-                if ((timeSpent / usageCount) >= SIGNIFICANT_TIME_SPENT) {
-                    Sys.println('${label} (x${usageCount}): ${timeSpent}');
+            // Sort and print detailed compilation profiling output:
+            var zippedInfo = [
+                for (label => timeSpent in profileAggregates) {
+                    var usageCount = profileUsageCounts[label];
+                    
+                    var averageTime = (timeSpent / usageCount);
+                    if (averageTime >= SIGNIFICANT_AVERAGE_TIME || timeSpent >= SIGNIFICANT_TIME_SPENT) {
+                        var arr:Array<Dynamic> = [];
+                        arr.push(label);
+                        arr.push(averageTime);
+                        arr.push(usageCount);
+                        arr.push(timeSpent);
+                        arr;
+                    }
                 }
+            ];
+            zippedInfo.sort((a, b) -> Std.int(b[3] * 1000) - Std.int(a[3] * 1000));
+            for (info in zippedInfo) {
+                Sys.println('${info[0]}: ${info[1]} x ${info[2]} = ${info[3]}');
             }
 
             #end
@@ -504,7 +518,8 @@ class Kiss {
         return result;
     }
 
-    static final SIGNIFICANT_TIME_SPENT = 0.05;
+    static final SIGNIFICANT_AVERAGE_TIME = 0.1;
+    static final SIGNIFICANT_TIME_SPENT = 1;
 
     public static function load(kissFile:String, k:KissState, ?loadingDirectory:String, loadAllExps = false, ?fromExp:ReaderExp, ?expectedError:EType):Null<ReaderExp> {
         if (loadingDirectory == null)
