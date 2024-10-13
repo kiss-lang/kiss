@@ -373,7 +373,7 @@ class AsyncEmbeddedScript2 {
     public var onError:(Any,Continuation2,Continuation2)->Void;
 
     #if macro
-    public static function build(dslHaxelib:String, dslFile:String, scriptFile:String):Array<Field> {
+    public static function build(dslHaxelib:String, dslFile:String, scriptFile:String, autoLabelInterval:Int=10):Array<Field> {
         // trace('AsyncEmbeddedScript.build $dslHaxelib $dslFile $scriptFile');
         var k = Kiss.defaultKissState();
 
@@ -469,11 +469,13 @@ class AsyncEmbeddedScript2 {
 
         Context.registerModuleDependency(Context.getLocalModule(), scriptFile);
         k.fieldList = [];
+
+        var lastLabelIp = 0;
         Kiss._try(() -> {
             #if profileKiss
             Kiss.measure('Compiling kiss: $scriptFile', () -> {
             #end
-                function process(nextExp) {
+                function process(nextExp:ReaderExp) {
                     #if (kissCache && !lua)
                     var cacheKey = Reader.toString(nextExp.def);
                     if (cache.exists(cacheKey)) {
@@ -482,6 +484,13 @@ class AsyncEmbeddedScript2 {
                         return;
                     }
                     #end
+
+                    // Automatic evenly spaced labels!
+                    if (autoLabelInterval > 0 && commandList.length > lastLabelIp + autoLabelInterval){
+                        var b = nextExp.expBuilder();
+                        lastLabelIp = commandList.length;
+                        process(b.callSymbol("label", [b.symbol("auto")]));
+                    }
 
                     nextExp = Kiss._try(()->Kiss.macroExpand(nextExp, k));
                     if (nextExp == null) return;
