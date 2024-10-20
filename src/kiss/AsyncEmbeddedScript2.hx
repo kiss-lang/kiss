@@ -240,7 +240,7 @@ class AsyncEmbeddedScript2 {
                 return;
             };
         } else {
-            () -> {};
+            () -> {running = false;};
         }
 
         runWithErrorChecking(() -> {
