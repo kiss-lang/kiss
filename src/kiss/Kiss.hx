@@ -543,7 +543,9 @@ class Kiss {
             #end
             k.fieldList;
         }, expectedError);
+        #if kissCache
         File.saveContent(cacheFile, haxe.Json.stringify([for (key => value in expCache) key.value => value]));
+        #end
         return result;
     }
 
