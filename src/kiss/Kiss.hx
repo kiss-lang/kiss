@@ -636,14 +636,10 @@ class Kiss {
     }
 
     static var macroUsed = false;
-
-    #if kissCache
-    @:persistent
-    static var expCache:Map<String,Expr> = null;
-
-    static var cacheThreshold = 0.05;
-    #end
-
+    static var expCache:haxe.DynamicAccess<String> = null;
+    static var cacheFile = ".kissCache.json";
+    static var cacheThreshold = 0.2;
+    
     public static function readerExpToHaxeExpr(exp, k): Expr {
         return switch (macroExpandAndConvert(exp, k, false)) {
             case Right(expr): expr;
@@ -664,11 +660,15 @@ class Kiss {
         var str = Reader.toString(exp.def);
         if (!macroExpandOnly) {
             if (expCache == null) {
-                expCache = new Map();
+                expCache = if (sys.FileSystem.exists(cacheFile)) {
+                    haxe.Json.parse(File.getContent(cacheFile));
+                } else {
+                    {};
+                }
             }
 
             if (expCache.exists(str)) {
-                return Right(expCache[str]);
+                return Right(Context.parse(expCache[str], Helpers.macroPos(exp)));
             }
         }
         #end
@@ -876,9 +876,10 @@ class Kiss {
         if (!macroExpandOnly) {
             if (conversionTime > cacheThreshold && !k.stateChanged) {
                 expCache[str] = switch (expr) {
-                    case Right(expr): expr;
+                    case Right(expr): expr.toString();
                     default: throw "macroExpandAndConvert is broken";
                 }
+                File.saveContent(cacheFile, haxe.Json.stringify(expCache));
             }
         }
         #end
