@@ -11,6 +11,7 @@ using haxe.io.Path;
 import kiss.Helpers;
 using kiss.Helpers;
 using tink.MacroApi;
+import haxe.ds.HashMap;
 
 #end
 
@@ -383,13 +384,13 @@ class AsyncEmbeddedScript2 {
         var classFields = []; // Kiss.build() will already include Context.getBuildFields()
 
         var hscriptInstructions:Map<String,String> = [];
-        var cache:Map<String,String> = [];
+        var cache:HashMap<HashableString,String> = new HashMap();
         #if (kissCache && !lua)
         var cacheFile = scriptFile.withoutExtension().withoutDirectory() + ".cache.json";
         if (sys.FileSystem.exists(cacheFile)) {
             var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(cacheFile));
             for (key => value in cacheJson)
-                cache[key] = value;
+                cache[Prelude.hashableString(key)] = value;
         }
         #end
 
@@ -453,7 +454,7 @@ class AsyncEmbeddedScript2 {
         // As a side-effect, it also fills the KissState with the macros and reader macros that make the DSL syntax
         classFields = classFields.concat(Kiss.build(dslFile, k));
 
-        if (Lambda.count(cache) > 0) {
+        if (cache.iterator().hasNext()) {
             classFields.push({
                 name: "hscriptInstructionFile",
                 access: [AOverride],
@@ -478,8 +479,8 @@ class AsyncEmbeddedScript2 {
                 function process(nextExp:ReaderExp) {
                     #if (kissCache && !lua)
                     var cacheKey = Reader.toString(nextExp.def);
-                    if (cache.exists(cacheKey)) {
-                        hscriptInstructions[Std.string(commandList.length)] = cache[cacheKey];
+                    if (cache.exists(Prelude.hashableString(cacheKey))) {
+                        hscriptInstructions[Std.string(commandList.length)] = cache[Prelude.hashableString(cacheKey)];
                         commandList.push(macro null);
                         return;
                     }
@@ -545,7 +546,7 @@ class AsyncEmbeddedScript2 {
                         #if (kissCache && !lua)
                         if (!stateChanged) {
                             var expr = Kiss._try(()->Kiss.readerExpToHaxeExpr(nextExp, k.forHScript()));
-                            cache[cacheKey] = expr.toString();
+                            cache[Prelude.hashableString(cacheKey)] = expr.toString();
                         }
                         #end
 
@@ -583,7 +584,7 @@ class AsyncEmbeddedScript2 {
         });
 
         #if (kissCache && !lua)
-        sys.io.File.saveContent(cacheFile, haxe.Json.stringify(cache));
+        sys.io.File.saveContent(cacheFile, haxe.Json.stringify([for (key => value in cache) key.value => value]));
         sys.io.File.saveContent(hscriptInstructionFile, haxe.Json.stringify(hscriptInstructions));
         #end
 

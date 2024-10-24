@@ -8,6 +8,7 @@ import haxe.macro.ExprTools;
 import haxe.macro.PositionTools;
 import haxe.io.Path;
 import sys.io.File;
+import kiss.Prelude;
 import kiss.Stream;
 import kiss.Reader;
 import kiss.ReaderExp;
@@ -20,6 +21,7 @@ import tink.syntaxhub.*;
 import tink.macro.Exprs;
 import haxe.ds.Either;
 import kiss.EType;
+import haxe.ds.HashMap;
 
 using kiss.Kiss;
 using kiss.Helpers;
@@ -27,6 +29,7 @@ using kiss.Reader;
 using tink.MacroApi;
 using haxe.io.Path;
 using StringTools;
+using hx.strings.Strings;
 
 typedef ExprConversion = (ReaderExp) -> Expr;
 
@@ -540,6 +543,7 @@ class Kiss {
             #end
             k.fieldList;
         }, expectedError);
+        File.saveContent(cacheFile, haxe.Json.stringify([for (key => value in expCache) key.value => value]));
         return result;
     }
 
@@ -636,9 +640,9 @@ class Kiss {
     }
 
     static var macroUsed = false;
-    static var expCache:haxe.DynamicAccess<String> = null;
+    static var expCache:HashMap<HashableString,String> = null;
     static var cacheFile = ".kissCache.json";
-    static var cacheThreshold = 0.2;
+    static var cacheThreshold = 0.05;
     
     public static function readerExpToHaxeExpr(exp, k): Expr {
         return switch (macroExpandAndConvert(exp, k, false)) {
@@ -660,15 +664,20 @@ class Kiss {
         var str = Reader.toString(exp.def);
         if (!macroExpandOnly) {
             if (expCache == null) {
-                expCache = if (sys.FileSystem.exists(cacheFile)) {
+                var expCacheDynamic:haxe.DynamicAccess<String> = if (sys.FileSystem.exists(cacheFile)) {
                     haxe.Json.parse(File.getContent(cacheFile));
                 } else {
                     {};
                 }
+
+                expCache = new HashMap();
+                for (key => value in expCacheDynamic) {
+                    expCache[Prelude.hashableString(key)] = value;
+                }
             }
 
-            if (expCache.exists(str)) {
-                return Right(Context.parse(expCache[str], Helpers.macroPos(exp)));
+            if (expCache.exists(Prelude.hashableString(str))) {
+                return Right(Context.parse(expCache[Prelude.hashableString(str)], Helpers.macroPos(exp)));
             }
         }
         #end
@@ -875,11 +884,10 @@ class Kiss {
         #if kissCache
         if (!macroExpandOnly) {
             if (conversionTime > cacheThreshold && !k.stateChanged) {
-                expCache[str] = switch (expr) {
+                expCache[Prelude.hashableString(str)] = switch (expr) {
                     case Right(expr): expr.toString();
                     default: throw "macroExpandAndConvert is broken";
                 }
-                File.saveContent(cacheFile, haxe.Json.stringify(expCache));
             }
         }
         #end

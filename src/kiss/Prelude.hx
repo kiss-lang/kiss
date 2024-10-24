@@ -31,6 +31,7 @@ import sys.thread.Mutex;
 #end
 using StringTools;
 using uuid.Uuid;
+using hx.strings.Strings;
 
 /** What functions that process Lists should do when there are more elements than expected **/
 enum ExtraElementHandling {
@@ -50,7 +51,19 @@ enum KissTarget {
     Lua;
 }
 
+typedef HashableString = {
+    value:String,
+    hashCode:()->Int
+};
+
 class Prelude {
+    public static function hashableString(s:String):HashableString {
+        return {
+            value: s,
+            hashCode: () -> s.hashCode()
+        };
+    }
+
     static function stringOrFloat(d:Dynamic):Either<String, Float> {
         return switch (Type.typeof(d)) {
             case TInt | TFloat: Right(0.0 + d);
