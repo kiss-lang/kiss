@@ -13,6 +13,18 @@ import js.lib.Promise;
 
 using StringTools;
 
+class BasicObject {
+    var val:Int;
+
+    public function new(val:Int) {
+        this.val = val;
+    }
+
+    public function multiply(otherVal:Int) {
+        return val * otherVal;
+    }
+}
+
 @:build(kiss.Kiss.build())
 class BasicTestCase extends Test {
     function testSplitByAll() {
@@ -466,16 +478,4 @@ class BasicTestCase extends Test {
     }
 
     var aNullToPrint = null;
-}
-
-class BasicObject {
-    var val:Int;
-
-    public function new(val:Int) {
-        this.val = val;
-    }
-
-    public function multiply(otherVal:Int) {
-        return val * otherVal;
-    }
 }

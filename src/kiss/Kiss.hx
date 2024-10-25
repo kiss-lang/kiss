@@ -549,6 +549,204 @@ class Kiss {
         return result;
     }
 
+    static final fossilStart = "\n\t// BEGIN KISS FOSSIL CODE\n\t// "; // TODO remove the boneyard comments
+    static final fossilEnd = "\t// END KISS FOSSIL CODE\n";
+
+    static function complexTypeToString(type:ComplexType) {
+        var fossilCode = "";
+        switch (type) {
+            case TPath(path):
+                if (path.pack.length > 0) {
+                    fossilCode += path.pack.join(".") + ".";
+                }
+                fossilCode += path.name;
+                if (path.sub != null) {
+                    fossilCode += "." + path.sub;
+                }
+                if (path.params != null && path.params.length > 0) {
+                    fossilCode += "<";
+                    fossilCode += [for (param in path.params) {
+                        switch (param) {
+                            case TPType(t):
+                                complexTypeToString(t);
+                            default:
+                                '{type parameter $param is not supported for fossilization}';
+                        }
+                    }].join(",");
+                    fossilCode += ">";
+                }
+            case TFunction(args, ret):
+                fossilCode += "(";
+                fossilCode += [for (arg in args) complexTypeToString(arg)].join(",");
+                fossilCode += ")->";
+                fossilCode += complexTypeToString(ret);
+            case TAnonymous(fields):
+                fossilCode += "{";
+                fossilCode += [for (field in fields) {
+                    field.name + ":" + switch(field.kind) {
+                        case FVar(type, _):
+                            complexTypeToString(type);
+                        default:
+                            '{field type $type not supported in anonymous object typedef fossilization}';
+                    }
+                }].join(",");
+                fossilCode += "}";
+
+            default:
+                fossilCode += '{ComplexType $type not supported for fossilization}';
+        }
+        return fossilCode;
+    }
+
+    public static function fossilBuild(?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext, ?expectedError:EType):Array<Field> {
+        var pos = Context.currentPos();
+        var haxeFile = Context.getPosInfos(pos).file;
+
+        if (kissFile == null) {
+            kissFile = haxeFile.withoutDirectory().withoutExtension().withExtension("kiss");
+        }
+
+        var haxeMTime = sys.FileSystem.stat(haxeFile).mtime;
+        var haxeContent = File.getContent(haxeFile).replace("\r", "");
+        
+        var fossilToolsPath = Prelude.joinPath(Helpers.libPath("kiss"), "src/kiss/Kiss.hx");
+        var pathsWhichTriggerRebuild = [fossilToolsPath];
+
+        if (haxeContent.contains(fossilStart)) {
+            var loadedFilesIndex = haxeContent.indexOf(fossilStart) + fossilStart.length;
+            var loadedFilesStr = haxeContent.substring(loadedFilesIndex, haxeContent.indexOf("\n", loadedFilesIndex));
+            pathsWhichTriggerRebuild = pathsWhichTriggerRebuild.concat(haxe.Json.parse(loadedFilesStr));
+        } else {
+            pathsWhichTriggerRebuild.push(Path.join([Path.directory(haxeFile), kissFile]));
+        }
+
+        var rebuildMTime = Math.NEGATIVE_INFINITY;
+        for (path in pathsWhichTriggerRebuild) {
+            var fileMTime = sys.FileSystem.stat(path).mtime.getTime();
+            if (fileMTime > rebuildMTime) {
+                rebuildMTime = fileMTime;
+            }
+        }
+
+        
+        // return blank array if haxefile is changed more recently than the Kiss
+        if (haxeMTime.getTime() > rebuildMTime && haxeContent.contains(fossilStart)) {
+            return Context.getBuildFields();
+        } else {
+            if (k == null) k = defaultKissState(context);
+
+            // Kiss generate the fields, which we then add to the Haxe
+            var fields = build(kissFile, k, false, context, expectedError);
+
+            var loadedFiles = [for (file => _ in k.loadedFiles) file];
+
+            var haxeContentStart = haxeContent;
+
+            if (haxeContent.contains(fossilStart)) {
+                var fossilStartIdx = haxeContent.indexOf(fossilStart);
+                var fossilEndIdx = haxeContent.indexOf(fossilEnd) + fossilEnd.length;
+
+                haxeContentStart = haxeContent.substr(0, fossilStartIdx) + haxeContent.substr(fossilEndIdx);
+            }
+
+            var fossilCode = haxe.Json.stringify(loadedFiles) + "\n";
+            var buildFieldNames = [for (field in Context.getBuildFields()) field.name => field];
+            for (field in fields) {
+                fossilCode += "\t";
+                if (buildFieldNames.exists(field.name)) {
+                    buildFieldNames.remove(field.name);
+                }
+
+                // Field modifiers:
+                var accessOrder = [
+                    APublic,
+                    APrivate,
+                    AStatic,
+                    AOverride,
+                    ADynamic,
+                    AFinal
+                ];
+                
+                var isFinal = false;
+                for (access in accessOrder) {
+                    if (field.access.contains(access)) {
+                        if (access == AFinal) isFinal = true;
+                        else fossilCode += Std.string(access).substr(1).toLowerCase() + " ";
+                    }
+                }
+
+                switch(field.kind) {
+                    case FVar(type, e):
+                        // Variables:
+                        if (isFinal)
+                            fossilCode += "final ";
+                        if (!isFinal)
+                            fossilCode += "var ";
+                        fossilCode += field.name;
+                        if (type != null) {
+                            fossilCode += ":";
+                            fossilCode += complexTypeToString(type);
+                        }
+                        if (e != null) {
+                            fossilCode += ' = ' + e.toString();
+                        }
+                        fossilCode += ';';
+                    case FFun(f):
+                        fossilCode += "function " + field.name + "(";
+                        var firstArg = true;
+                        for (arg in f.args) {
+                            if (!firstArg) {
+                                fossilCode += ', ';
+                            }
+                            firstArg = false;
+
+                            if (arg.opt == true) {
+                                fossilCode += '?';
+                            }
+                            fossilCode += arg.name;
+                            if (arg.type != null) {
+                                fossilCode += ':';
+                                fossilCode += complexTypeToString(arg.type);
+                            }
+                            if (arg.value != null) {
+                                fossilCode += " = " + arg.value.toString();
+                            }
+                        }
+                        fossilCode += ")";
+                        if (f.ret != null) {
+                            fossilCode += ':' + complexTypeToString(f.ret) + " ";
+                        } 
+                        if (f.expr != null) {
+                            var funcExpToString = f.expr.toString(); 
+                            fossilCode += " " + funcExpToString;
+                            if (!funcExpToString.contains("\n") && !funcExpToString.endsWith(";"))
+                                fossilCode += ";";
+                        } else {
+                            // I think this case would never happen from a Kiss file,
+                            // but it's easy enough to handle.
+                            fossilCode += ';';
+                        }
+                    case FProp(get, set, type, e):
+                        fossilCode += "var " + field.name + "(" + get + "," + set + "):" + complexTypeToString(type);
+                        if (e != null) {
+                            fossilCode += " = " + e.toString();
+                        }
+                        fossilCode += ";";
+                    default:
+                        fossilCode += '{Field type ${field.kind} not supported for fossilization}';
+                }
+
+                fossilCode += "\n";
+            }
+
+            var newFossilStart = haxeContentStart.lastIndexOf("}");
+            var haxeContentEnd = haxeContentStart.substr(0, newFossilStart) + fossilStart + fossilCode + fossilEnd + haxeContentStart.substr(newFossilStart);
+            File.saveContent(haxeFile + ".bak", haxeContent);
+            File.saveContent(haxeFile, haxeContentEnd);
+            return fields.concat([for (name => field in buildFieldNames) field]);
+        }
+    }
+
     static final SIGNIFICANT_AVERAGE_TIME = 0.1;
     static final SIGNIFICANT_TIME_SPENT = 1;
     // EGREGIOUS * SIGNIFICANT -> print in red
