@@ -598,6 +598,22 @@ class Kiss {
         return fossilCode;
     }
 
+    public static function typeParamDeclToString(param:TypeParamDecl) {
+        var str = param.name;
+
+        if (param.params != null && param.params.length > 0) {
+            str += "<";
+            str += [for (innerParam in param.params) typeParamDeclToString(innerParam)].join(",");
+            str += ">";
+        }
+
+        if (param.defaultType != null || (param.constraints != null && param.constraints.length > 0)) {
+            str += "{type paramater default types and constraints are not supported for fossilization}";
+        }
+
+        return str;
+    }
+
     public static function toStringTabbed(e:Expr) {
         var str = e.toString();
         return str.replace("\n", "\n\t");
@@ -697,7 +713,17 @@ class Kiss {
                         }
                         fossilCode += ';';
                     case FFun(f):
-                        fossilCode += "function " + field.name + "(";
+                        fossilCode += "function " + field.name;
+                        if (f.params != null && f.params.length > 0) {
+                            fossilCode += "<";
+                            fossilCode += [
+                                for (param in f.params) {
+                                    typeParamDeclToString(param);
+                                }
+                            ].join(",");
+                            fossilCode += ">";
+                        }
+                        fossilCode += "(";
                         var firstArg = true;
                         for (arg in f.args) {
                             if (!firstArg) {
