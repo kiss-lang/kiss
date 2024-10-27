@@ -552,7 +552,7 @@ class Kiss {
     static final fossilStart = "\n\t// BEGIN KISS FOSSIL CODE\n\t// "; // TODO remove the boneyard comments
     static final fossilEnd = "\t// END KISS FOSSIL CODE\n";
 
-    static function complexTypeToString(type:ComplexType) {
+    static function complexTypeToString(type:ComplexType, emptyForVoid = false) {
         var fossilCode = "";
         switch (type) {
             case TPath(path):
@@ -577,7 +577,7 @@ class Kiss {
                 }
             case TFunction(args, ret):
                 fossilCode += "(";
-                fossilCode += [for (arg in args) complexTypeToString(arg)].join(",");
+                fossilCode += [for (arg in args) complexTypeToString(arg, true)].join(",");
                 fossilCode += ")->";
                 fossilCode += complexTypeToString(ret);
             case TAnonymous(fields):
@@ -595,6 +595,7 @@ class Kiss {
             default:
                 fossilCode += '{ComplexType $type not supported for fossilization}';
         }
+        if (emptyForVoid && fossilCode == "Void") return "";
         return fossilCode;
     }
 
