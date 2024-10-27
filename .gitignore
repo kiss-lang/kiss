@@ -1,3 +1,5 @@
 AsyncDSLScript*.json
 bin/
 .DS_Store
+*.bak
+.kissCache.json

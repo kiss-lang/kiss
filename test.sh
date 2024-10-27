@@ -3,8 +3,8 @@
 KISS_TARGET=${KISS_TARGET:-$1}
 KISS_TARGET=${KISS_TARGET:-interp}
 
-FLAGS="-D kissCache" # for testing AsyncEmbeddedScript
 if [ -n "$CI_OS_NAME" ]; then
+    FLAGS="-D kissCache" # for testing AsyncEmbeddedScript
     lix download
 fi
 
