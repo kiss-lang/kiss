@@ -598,6 +598,11 @@ class Kiss {
         return fossilCode;
     }
 
+    public static function toStringTabbed(e:Expr) {
+        var str = e.toString();
+        return str.replace("\n", "\n\t");
+    }
+
     public static function fossilBuild(?kissFile:String, ?k:KissState, useClassFields = true, ?context:FrontendContext, ?expectedError:EType):Array<Field> {
         var pos = Context.currentPos();
         var haxeFile = Context.getPosInfos(pos).file;
@@ -688,7 +693,7 @@ class Kiss {
                             fossilCode += complexTypeToString(type);
                         }
                         if (e != null) {
-                            fossilCode += ' = ' + e.toString();
+                            fossilCode += ' = ' + toStringTabbed(e);
                         }
                         fossilCode += ';';
                     case FFun(f):
@@ -709,7 +714,7 @@ class Kiss {
                                 fossilCode += complexTypeToString(arg.type);
                             }
                             if (arg.value != null) {
-                                fossilCode += " = " + arg.value.toString();
+                                fossilCode += " = " + toStringTabbed(arg.value);
                             }
                         }
                         fossilCode += ")";
@@ -717,7 +722,7 @@ class Kiss {
                             fossilCode += ':' + complexTypeToString(f.ret) + " ";
                         } 
                         if (f.expr != null) {
-                            var funcExpToString = f.expr.toString(); 
+                            var funcExpToString = toStringTabbed(f.expr); 
                             fossilCode += " " + funcExpToString;
                             if (!funcExpToString.contains("\n") && !funcExpToString.endsWith(";"))
                                 fossilCode += ";";
@@ -729,7 +734,7 @@ class Kiss {
                     case FProp(get, set, type, e):
                         fossilCode += "var " + field.name + "(" + get + "," + set + "):" + complexTypeToString(type);
                         if (e != null) {
-                            fossilCode += " = " + e.toString();
+                            fossilCode += " = " + toStringTabbed(e);
                         }
                         fossilCode += ";";
                     default:
