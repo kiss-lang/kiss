@@ -54,6 +54,9 @@ class ExpBuilder {
                 callSymbol("kiss.Prelude.runtimeInsertAssertionMessage", [messageExp, str(failureError), int(colonsInPrefix)])
             ]);
         }
+        function whenUnless(which:String, condition:ReaderExp, body:Array<ReaderExp>) {
+            return callSymbol(which, [condition].concat(body));
+        }
         return {
             call: call,
             callSymbol: callSymbol,
@@ -74,6 +77,8 @@ class ExpBuilder {
             keyValue: (key:ReaderExp, value:ReaderExp) -> KeyValueExp(key, value).withPosOf(posRef),
             begin: (exps:Array<ReaderExp>) -> callSymbol("begin", exps),
             set: (v:ReaderExp, value:ReaderExp) -> callSymbol("set", [v, value]),
+            when: whenUnless.bind("when"),
+            unless: whenUnless.bind("unless"),
             let: let,
             objectWith: objectWith,
             expFromDef: (def:ReaderExpDef) -> def.withPosOf(posRef),
