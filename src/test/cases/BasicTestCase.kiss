@@ -1015,3 +1015,18 @@ From:[(assert false (+ \"false \" \"should \" \"have \" \"been \" \"true\"))]" m
     (let [a (array Float 1 1.5 2)]
         (Assert.isTrue (Std.isOfType a Array))
         (Assert.isTrue (Std.isOfType (first a) Float))))
+                        
+(function _testDefault []
+    // TODO it would be nice to allow &mut on the whole list and &final to override it
+    (let [&mut f false
+                &mut t true
+                &mut n null
+                &mut i 5]
+        (default f true)
+        (Assert.equals false f )
+        (default t false)
+        (Assert.equals true t)
+        (default n 5)
+        (Assert.equals 5 n)
+        (default i 9)
+        (Assert.equals i 5)))

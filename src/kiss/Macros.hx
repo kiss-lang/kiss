@@ -1598,6 +1598,13 @@ class Macros {
 
             b.let([b.typed('Array<${typeName}>', arraySymbol), b.list([])], [for (arg in args.slice(1)) b.call(b.field("push", arraySymbol), [arg])].concat([arraySymbol]));
         };
+
+        k.doc("default", 2, 2, "(default <variable> <value>)");
+        macros["default"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
+            var b = wholeExp.expBuilder();
+            b.when(b.callSymbol("isNull", [args[0]]), [b.set(args[0], args[1])]);
+        };
+
         return macros;
     }
 

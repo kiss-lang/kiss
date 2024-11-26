@@ -476,6 +476,10 @@ class BasicTestCase extends Test {
     function testTypedArrayMacro() {
         _testTypedArrayMacro();
     }
-
+    
+    function testDefault() {
+        _testDefault();
+    }
+    
     var aNullToPrint = null;
 }
