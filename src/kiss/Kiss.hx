@@ -186,7 +186,8 @@ class Kiss {
                 "readDirectory" => Symbol("Prelude.readDirectory"),
                 "substr" => Symbol("Prelude.substr"),
                 "isListExp" => Symbol("Prelude.isListExp"),
-                "isNull" => Symbol("Prelude.isNull")
+                "isNull" => Symbol("Prelude.isNull"),
+                "isNotNull" => Symbol("Prelude.isNotNull")
                 /* zip functions used to live here as aliases but now they are macros that also
                 apply (the Array<Array<Dynamic>>) to the result */
                 /* intersect used to live here as an alias but now it is in a macro that also

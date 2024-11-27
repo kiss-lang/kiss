@@ -431,11 +431,12 @@ class Prelude {
 
     public static var joinPath:Function = Reflect.makeVarArgs(_joinPath);
 
-    public static function isNull<T>(v:T) {
-        return switch (Type.typeof(v)) {
-            case TNull: true;
-            default: false;
-        }
+    public static function isNull<T>(v:Null<T>) {
+        return v == null;
+    }
+    
+    public static function isNotNull<T>(v:Null<T>) {
+        return v != null;
     }
 
     public static dynamic function truthy<T>(v:T) {
