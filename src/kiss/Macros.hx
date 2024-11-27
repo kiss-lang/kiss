@@ -748,7 +748,7 @@ class Macros {
             return b.let(
                 [gensym, firstValue],
                 [b.callSymbol("if", [
-                    gensym,
+                    b.callSymbol("Prelude.isNotNull", [gensym]),
                     b.callSymbol("case", [
                         gensym,
                         b.call(firstPattern, [
