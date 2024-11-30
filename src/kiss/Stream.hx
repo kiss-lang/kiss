@@ -1,6 +1,6 @@
 package kiss;
 
-#if (sys || hxnodejs)
+#if (macro || ((sys || hxnodejs) && !frontend))
 import sys.io.File;
 #end
 import haxe.ds.Option;
@@ -44,7 +44,7 @@ class Stream {
 
     public var startOfLine = true;
 
-    #if (sys || hxnodejs)
+    #if (macro || ((sys || hxnodejs) && !frontend))
     public static function fromFile(file:String) {
         return new Stream(file, File.getContent(file));
     }

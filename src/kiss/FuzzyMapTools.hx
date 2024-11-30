@@ -65,7 +65,7 @@ class FuzzyMapTools {
 
     @:allow(kiss.FuzzyMap)
     static function onMatchMade(m:StringMap<Dynamic>, key:String, value:Dynamic) {
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         if (serializingMaps.exists(m)) {
             var info = serializingMaps[m];
             info.matches[key] = value;

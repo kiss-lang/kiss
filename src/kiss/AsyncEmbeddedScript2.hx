@@ -136,7 +136,7 @@ class AsyncEmbeddedScript2 {
         interp = new ObjectInterp2(this);
         kiss.KissInterp.prepare(interp);
         if (hscriptInstructionFile().length > 0) {
-            #if (sys || hxnodejs)
+            #if ((sys || hxnodejs) && !frontend)
             var cacheJson:haxe.DynamicAccess<String> = haxe.Json.parse(sys.io.File.getContent(hscriptInstructionFile()));
             for (key => value in cacheJson) {
                 hscriptInstructions[Std.parseInt(key)] = value;
@@ -311,7 +311,7 @@ class AsyncEmbeddedScript2 {
             Prelude.printStr(e.message);
             if (onError != null) {
                 onError(e, () -> {
-                    #if (sys || hxnodejs)
+                    #if ((sys || hxnodejs) && !frontend)
                     Sys.exit(1);
                     #end
                     throw e;
@@ -321,7 +321,7 @@ class AsyncEmbeddedScript2 {
                     ()->{trace("no-op cc");};
                 });
             } else {
-                #if (sys || hxnodejs)
+                #if ((sys || hxnodejs) && !frontend)
                 Sys.exit(1);
                 #end
                 throw e;

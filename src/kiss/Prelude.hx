@@ -9,13 +9,13 @@ import haxe.DynamicAccess;
 #if js
 import js.lib.Promise;
 #end
-#if (!macro && hxnodejs)
+#if (!macro && hxnodejs && !frontend)
 import js.node.ChildProcess;
 import js.node.Buffer;
 #elseif sys
 import sys.io.Process;
 #end
-#if (sys || hxnodejs)
+#if ((sys || hxnodejs) && !frontend)
 import sys.FileSystem;
 import sys.io.File;
 #end
@@ -477,7 +477,7 @@ class Prelude {
             } else {
                 var ret = Reflect.callMethod(caller, func, args);
                 argMap[argString] = ret;
-                #if (sys || hxnodejs)
+                #if ((sys || hxnodejs) && !frontend)
                 if (jsonFile != null) {
                     File.saveContent(jsonFile, Json.stringify(argMap));
                 }
@@ -489,7 +489,7 @@ class Prelude {
         return f;
     }
 
-    #if (sys || hxnodejs)
+    #if ((sys || hxnodejs) && !frontend)
     public static function fsMemoize(func:Function, funcName:String, cacheDirectory = "", ?caller:Dynamic):Function {
         var fileName = '${funcName}.memoized';
         if (cacheDirectory.length > 0) {
@@ -506,7 +506,7 @@ class Prelude {
     #end
 
     public static function _printStr(s:String) {
-        #if (sys || hxnodejs)
+        #if ((sys || nodejs) && !frontend)
         Sys.println(s);
         #else
         trace(s);
@@ -614,7 +614,7 @@ class Prelude {
 
     public static function walkDirectory(basePath, directory, processFile:(String) -> Void, ?filterFolderBefore:(String) -> Bool,
             ?processFolderAfter:(String) -> Void) {
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         for (fileOrFolder in FileSystem.readDirectory(joinPath(basePath, directory))) {
             switch (fileOrFolder) {
                 case folder if (FileSystem.isDirectory(joinPath(basePath, directory, folder))):
@@ -638,7 +638,7 @@ class Prelude {
     }
 
     public static function purgeDirectory(directory) {
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         walkDirectory("", directory, FileSystem.deleteFile, null, FileSystem.deleteDirectory);
         FileSystem.deleteDirectory(directory);
         #else
@@ -656,7 +656,7 @@ class Prelude {
     public static function convertToHScript(kissStr:String):String {
         var unsupportedMessage = "Can't convert Kiss to HScript on this target.";
 
-        #if (!sys && !hxnodejs)
+        #if ((!sys && !hxnodejs) || frontend)
         throw unsupportedMessage;
         #else
 
@@ -675,7 +675,7 @@ class Prelude {
         #if macro
         return Kiss.measure("Prelude.convertToHScript", () -> {
         #end
-            #if (!macro && hxnodejs)
+            #if (!macro && hxnodejs && !frontend)
             var hscript = try {
                 assertProcess("haxe", [buildHxml, "convert", "--all", "--hscript"], kissStr.split('\n'), true, cwd);
             } catch (e) {
@@ -725,7 +725,7 @@ class Prelude {
         #end
     }
 
-    #if (sys || hxnodejs)
+    #if ((sys || hxnodejs) && !frontend)
     public static function userHome() {
         var msysHome = Sys.getEnv("MSYSHOME");
         var home = Sys.getEnv("HOME");
@@ -750,7 +750,7 @@ class Prelude {
             CSharp;
         #elseif interp
             Haxe;
-        #elseif hxnodejs
+        #elseif (hxnodejs && !frontend)
             NodeJS;
         #elseif js
             JavaScript;
@@ -852,7 +852,7 @@ class Prelude {
             handleError('process $command $args failed: $e');
             return null;
         }
-        #elseif hxnodejs
+        #elseif (hxnodejs && !frontend)
         var p = if (inputLines != null) {
             ChildProcess.spawnSync(command, args, {input: inputLines.join("\n"), cwd: cwd});
         } else {
@@ -885,7 +885,7 @@ class Prelude {
     static var shellCount = 0;
 
     public static function shellExecute(script:String, shell:String) {
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         if (shell.length == 0) {
             shell = if (Sys.systemName() == "Windows") "cmd /c" else "bash";
         }
@@ -924,7 +924,7 @@ class Prelude {
         return Lambda.filter(l, p);
     }
 
-    #if (sys || hxnodejs)
+    #if ((sys || hxnodejs) && !frontend)
     public static function readDirectory(dir:String) {
         return [for (file in FileSystem.readDirectory(dir)) {
             joinPath(dir, file);

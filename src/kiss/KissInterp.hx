@@ -35,7 +35,7 @@ class KissInterp extends Interp {
         interp.variables.set("FuzzyMapTools", FuzzyMapTools);
         interp.variables.set("StringTools", StringTools);
         interp.variables.set("Path", haxe.io.Path);
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         interp.variables.set("Sys", Sys);
         interp.variables.set("FileSystem", sys.FileSystem);
         interp.variables.set("File", sys.io.File);
@@ -65,14 +65,14 @@ class KissInterp extends Interp {
     public var cacheConvertedHScript = false;
 
     public function evalKiss(kissStr:String):Dynamic {
-        #if !(sys || hxnodejs)
+        #if !((sys || hxnodejs) && !frontend)
         if (cacheConvertedHScript) {
             throw "Cannot used cacheConvertedHScript on a non-sys target";
         }
         #end
 
         var convert =
-            #if (sys || hxnodejs)
+            #if ((sys || hxnodejs) && !frontend)
             if (cacheConvertedHScript) {
                 Prelude.cachedConvertToHScript;
             } else
@@ -157,7 +157,7 @@ class KissInterp extends Interp {
         }
 
         kiss.Prelude.print(varDump);
-        #if (sys || hxnodejs)
+        #if ((sys || hxnodejs) && !frontend)
         sys.io.File.saveContent(file, varDump);
         #end
     }
