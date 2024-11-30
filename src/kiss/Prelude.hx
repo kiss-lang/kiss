@@ -656,7 +656,7 @@ class Prelude {
     public static function convertToHScript(kissStr:String):String {
         var unsupportedMessage = "Can't convert Kiss to HScript on this target.";
 
-        #if ((!sys && !hxnodejs) || frontend)
+        #if (!macro && (!sys && !hxnodejs) || frontend)
         throw unsupportedMessage;
         #else
 
@@ -725,7 +725,7 @@ class Prelude {
         #end
     }
 
-    #if ((sys || hxnodejs) && !frontend)
+    #if (macro || (sys || hxnodejs) && !frontend)
     public static function userHome() {
         var msysHome = Sys.getEnv("MSYSHOME");
         var home = Sys.getEnv("HOME");
