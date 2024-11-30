@@ -513,19 +513,6 @@ class Prelude {
         #end
     }
 
-    #if (sys || hxnodejs)
-    static var externLogFile = "externLog.txt";
-
-    public static function _externPrintStr(s:String) {
-        var logContent = try {
-            File.getContent(externLogFile);
-        } catch (e) {
-            "";
-        }
-        File.saveContent(externLogFile, '${logContent}${s}\n');
-    }
-    #end
-
     public static var printStr:(String) -> Void = _printStr;
 
     public static function withLabel(v:Any, label = "") {
