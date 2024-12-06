@@ -26,4 +26,9 @@ class ReaderMacroTestCase extends Test {
     function testQuasiquoteMacro() {
         _testQuasiquoteMacro();
     }
+
+    function testStartOfLineInMiddle() {
+        _testStartOfLineInMiddle();
+    }
+    
 }

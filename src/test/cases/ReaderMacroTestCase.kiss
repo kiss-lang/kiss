@@ -30,6 +30,8 @@
     rassert fluffers
     (Assert.pass))
 
+(undefReaderMacro ["b" "c"]) 
+
 (function _testCommentAtBlockOrArrayEnd []
     [
         (+ 1 2)
@@ -40,3 +42,13 @@
         // Comment
     }
     (Assert.pass))
+
+(function _testStartOfLineInMiddle []
+    (let [bob "first"
+            bob2 "second"]
+
+        (defReaderMacro &start "bob" [stream] `bob)
+        (defReaderMacro "bob" [stream] `bob2)                    
+
+        (Assert.equals "firstsecond" (+
+            bob bob))))
