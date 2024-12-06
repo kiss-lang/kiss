@@ -10,6 +10,11 @@ typedef MapInfo = {
     matches:Map<String,Dynamic>
 };
 
+enum FuzzyGetResult<T> {
+    Found(realKey:String, value:T, score:Float);
+    NotFound;
+}
+
 class FuzzyMapTools {
     static var serializingMaps = new Map<StringMap<Dynamic>, MapInfo>();
 
@@ -61,6 +66,15 @@ class FuzzyMapTools {
         #end
         
         return bestKey;
+    }
+
+    public static function fuzzyGet<T>(map:FuzzyMap<T>, fuzzySearchKey:String): FuzzyGetResult<T> {
+        return switch (bestMatch(map, fuzzySearchKey, false)) {
+            case null:
+                NotFound;
+            case key:
+                Found(key, map[key], fuzzyMatchScore(key, fuzzySearchKey));
+        };
     }
 
     @:allow(kiss.FuzzyMap)

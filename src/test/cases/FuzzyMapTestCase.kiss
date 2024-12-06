@@ -1,0 +1,5 @@
+(function _testFuzzyGet []
+    (let [:kiss.FuzzyMap<String> m [=>"glurg" "burgle"]]
+        (assertLet [(Found "glurg" "burgle" _) (fuzzyGet m "gurg")
+                        NotFound (fuzzyGet m "totally different string")]
+            (Assert.pass))))

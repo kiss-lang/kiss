@@ -143,7 +143,8 @@ class Kiss {
                 "walkDirectory" => Symbol("Prelude.walkDirectory"),
                 "purgeDirectory" => Symbol("Prelude.purgeDirectory"),
                 "getTarget" => Symbol("Prelude.getTarget"),
-                // These work with (apply) because they are added as "opAliases" in Macros.kiss:
+                "fuzzyGet" => Symbol("kiss.FuzzyMapTools.fuzzyGet"),
+                // These work with (apply) because they are added as "opAliases" in Macros.hx:
                 "min" => Symbol("Prelude.min"),
                 "max" => Symbol("Prelude.max"),
                 "iHalf" => Symbol("Prelude.iHalf"),
