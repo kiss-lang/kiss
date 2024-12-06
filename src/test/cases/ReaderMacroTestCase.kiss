@@ -43,12 +43,13 @@
     }
     (Assert.pass))
 
-(function _testStartOfLineInMiddle []
-    (let [bob "first"
-            bob2 "second"]
+(defReaderMacro &start "bob" [stream] `var1)
+(defReaderMacro "bob" [stream] `var2)                    
 
-        (defReaderMacro &start "bob" [stream] `bob)
-        (defReaderMacro "bob" [stream] `bob2)                    
+
+(function _testStartOfLineInMiddle []
+    (let [var1 "first"
+            var2 "second"]
 
         (Assert.equals "firstsecond" (+
             bob bob))))
