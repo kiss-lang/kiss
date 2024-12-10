@@ -39,10 +39,6 @@ class BasicTestCase extends Test {
         _testHaxeInsertion();
     }
 
-    function testKissInsertion() {
-        Assert.equals(10, Kiss.exp('(+ 5 2 3)'));
-    }
-
     function testStaticFunction() {
         Assert.equals(6, BasicTestCase.myFloor(6.5));
     }

@@ -320,36 +320,7 @@ class Kiss {
     }
 
     #end
-    public static macro function exp(kissCode:ExprOf<String>) {
-        var pos = kissCode.pos;
-        var pos = PositionTools.getInfos(pos);
-        var kissCode = ExprTools.getValue(kissCode);
-
-        var content = File.getContent(pos.file).substr(0, pos.min);
-        var lines:kiss.List<String> = content.split('\n');
-        var lineNumber = lines.length;
-        var column = lines[-1].length + 1;
-        var pos = {
-            file: pos.file,
-            absoluteChar: pos.min,
-            line: lineNumber,
-            column: column
-        };
-
-        return _try(() -> {
-            var exp = null;
-            var stream = Stream.fromString(kissCode, pos);
-            var k = defaultKissState();
-            Reader.readAndProcess(stream, k, (nextExp) -> {
-                if (exp == null) {
-                    exp = readerExpToHaxeExpr(nextExp, k);
-                } else {
-                    throw KissError.fromExp(nextExp, "can't have multiple top-level expressions in Kiss.exp() input");
-                }
-            });
-            return exp;
-        });
-    }
+    
     #if macro
     static function addContextFields(k:KissState, useClassFields:Bool) {
         if (useClassFields) {
