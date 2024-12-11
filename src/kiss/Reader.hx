@@ -411,7 +411,7 @@ class Reader {
         Read all the expressions in the given stream, processing them one by one while reading.
         They can't be read all at once because some expressions change the Readtable state
     **/
-    public static function readAndProcess(stream:Stream, k:HasReadTables, process:(ReaderExp) -> Void, nested = false) {
+    public static function readAndProcessCC(stream:Stream, k:HasReadTables, process:(ReaderExp, cc:Void->Void) -> Void, nested = false) {
         if (nested) {
             nestedReadExpArrayStartPositions.push(readExpArrayStartPositions);
             readExpArrayStartPositions = [];
@@ -419,45 +419,61 @@ class Reader {
             assertNoPriorState(stream);
         }
 
-        var startOfFileMacro = chooseReadFunction(stream, k.startOfFileReadTable);
-        if (startOfFileMacro != null) {
-            var pos = stream.position();
-            var v = startOfFileMacro(stream, k);
-            if (v != null)
-                process(v.withPos(pos));
+        function finish() {
+            if (readExpArrayStartPositions.length != 0) {
+                throw new StreamError(stream.position(), "readExpArray() state is remaining in Reader after readAndProcess()");
+            }
+
+            if (nested) {
+                readExpArrayStartPositions = nestedReadExpArrayStartPositions.pop();
+            }
         }
 
-        while (true) {
+        function afterStartOfFile():Void {
             stream.dropWhitespace();
 
             var endOfFileMacro = chooseReadFunction(stream, k.endOfFileReadTable, true);
             if (endOfFileMacro != null) {
                 var pos = stream.position();
                 var v = endOfFileMacro(stream, k);
-                if (v != null)
-                    process(v.withPos(pos));
+                if (v != null){
+                    process(v.withPos(pos), finish);
+                    return;
+                }
             }
 
-            if (stream.isEmpty())
-                break;
+            if (stream.isEmpty()){
+                finish();
+                return;
+            }
+
             var position = stream.position();
             var nextExp = Reader._read(stream, k);
             // The last expression might be a comment, in which case None will be returned
             switch (nextExp) {
                 case Some(nextExp):
-                    process(nextExp);
+                    process(nextExp, afterStartOfFile);
                 case None:
                     stream.dropWhitespace(); // If there was a comment, drop whitespace that comes after
             }
         }
 
-        if (readExpArrayStartPositions.length != 0) {
-            throw new StreamError(stream.position(), "readExpArray() state is remaining in Reader after readAndProcess()");
+        var startOfFileMacro = chooseReadFunction(stream, k.startOfFileReadTable);
+        if (startOfFileMacro != null) {
+            var pos = stream.position();
+            var v = startOfFileMacro(stream, k);
+            if (v != null)
+                process(v.withPos(pos), afterStartOfFile);
+        } else {
+            afterStartOfFile();
         }
+    }
 
-        if (nested) {
-            readExpArrayStartPositions = nestedReadExpArrayStartPositions.pop();
-        }
+    public static function readAndProcess(stream:Stream, k:HasReadTables, process:(ReaderExp) -> Void, nested = false) {
+        readAndProcessCC(stream, k, (exp, cc) -> {
+            process(exp);
+            cc();
+        });
     }
 
     public static function withPos(def:ReaderExpDef, pos:Position) {
