@@ -3,6 +3,7 @@ package kiss;
 import kiss.ReaderExp;
 using kiss.Helpers;
 using kiss.Reader;
+using kiss.ExpBuilder;
 
 class ExpBuilder {
     // Return convenient functions for succinctly making new ReaderExps that link back to an original exp's
@@ -126,8 +127,37 @@ class ExpBuilder {
                     ])
                 ]);
             },
+            #if macro
             haxeExpr: (e:haxe.macro.Expr) -> Helpers.withMacroPosOf(e.expr, posRef),
+            #end
             none: () -> None.withPosOf(posRef)
         };
+    }
+
+    public static function checkNumArgs(wholeExp:ReaderExp, min:Null<Int>, max:Null<Int>, ?expectedForm:String) {
+        if (expectedForm == null) {
+            expectedForm = if (max == min) {
+                '$min arguments';
+            } else if (max == null) {
+                'at least $min arguments';
+            } else if (min == null) {
+                'no more than $max arguments';
+            } else if (min == null && max == null) {
+                throw 'checkNumArgs() needs a min or a max';
+            } else {
+                'between $min and $max arguments';
+            };
+        }
+
+        var args = switch (wholeExp.def) {
+            case CallExp(_, args): args;
+            default: throw KissError.fromExp(wholeExp, "Can only check number of args in a CallExp");
+        };
+
+        if (min != null && args.length < min) {
+            throw KissError.fromExp(wholeExp, 'Not enough arguments. Expected $expectedForm');
+        } else if (max != null && args.length > max) {
+            throw KissError.fromExp(wholeExp, 'Too many arguments. Expected $expectedForm');
+        }
     }
 }

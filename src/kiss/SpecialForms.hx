@@ -1,5 +1,6 @@
 package kiss;
 
+#if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
 import kiss.Reader;
@@ -799,3 +800,5 @@ class SpecialForms {
         return b.haxeExpr(m);
     };
 }
+
+#end

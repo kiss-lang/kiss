@@ -1,4 +1,5 @@
 package kiss;
+#if macro
 
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -1708,3 +1709,5 @@ class Macros {
         macros[formName] = cond;
     }
 }
+
+#end

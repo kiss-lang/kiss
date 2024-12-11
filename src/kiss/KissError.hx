@@ -26,6 +26,7 @@ class KissError {
         return new KissError([exp], message);
     }
 
+    #if macro
     public static function fromExpStr(pos:Position, expStr:String, message:String) {
         switch (Reader.read(Stream.fromString(expStr), Kiss.defaultKissState())) {
             case Some(exp):
@@ -34,6 +35,7 @@ class KissError {
                 throw 'bad'; // TODO better message
         }
     }
+    #end
 
     public static function fromArgs(exps:Array<ReaderExp>, message:String) {
         return new KissError(exps, message);
