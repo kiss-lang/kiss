@@ -159,9 +159,8 @@ class Stream {
     }
 
     public function putBackString(s:String) {
-        // I don't know what should happen when putBackString() is used while recording. So for now, it is an error.
         if (recordingType != Neither) {
-            error(this, "Undefined behavior: calling putBackString() while in the middle of recording a stream transaction");
+            recording = recording.substr(0, recording.length - s.length);
         }
         #if macro
         Kiss.measure("Stream.putBackString", () -> {

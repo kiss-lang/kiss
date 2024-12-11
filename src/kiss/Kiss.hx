@@ -786,9 +786,9 @@ class Kiss {
         }
         var startPosition = stream.position();
         var loadedExps = [];
-        Reader.readAndProcess(stream, k, (nextExp) -> {
+        Reader.readAndProcess(stream, k, (nextExp, str) -> {
             #if test
-            Sys.println(nextExp.def.toString());
+            Sys.println(str);
             #end
 
             // readerExpToHaxeExpr must be called to process readermacro, alias, and macro definitions

@@ -426,28 +426,35 @@ class Reader {
         }
     }
 
-    static function _startOfFile(stream:Stream, k:HasReadTables, process:(ReaderExp,Void->Void)->Void, ?cc:Void->Void) {
+    static function _startOfFile(stream:Stream, k:HasReadTables, process:(ReaderExp,String,Void->Void)->Void, ?cc:Void->Void) {
         if (cc == null) cc = () -> {};
         var startOfFileMacro = chooseReadFunction(stream, k.startOfFileReadTable);
         if (startOfFileMacro != null) {
             var pos = stream.position();
-            var v = startOfFileMacro(stream, k);
-            if (v != null)
-                process(v.withPos(pos), cc);
+            var v = null;
+            var str = stream.recordTransaction(Both, () -> {
+                v = startOfFileMacro(stream, k);
+            });
+            if (v != null) {
+                process(v.withPos(pos), str, cc);
+            }
         } else {
             cc();
         }
     }
 
-    static function _endOfFile(stream:Stream, k:HasReadTables, process:(ReaderExp,Void->Void)->Void, ?cc:Void->Void){
+    static function _endOfFile(stream:Stream, k:HasReadTables, process:(ReaderExp,String,Void->Void)->Void, ?cc:Void->Void){
         if (cc == null) cc = () -> {};
         var endOfFileMacro = chooseReadFunction(stream, k.endOfFileReadTable, true);
         if (endOfFileMacro != null) {
-            trace('end of file macro!');
             var pos = stream.position();
-            var v = endOfFileMacro(stream, k);
+            
+            var v = null;
+            var str = stream.recordTransaction(Both, () -> {
+                v = endOfFileMacro(stream, k);
+            });
             if (v != null){
-                process(v.withPos(pos), cc);
+                process(v.withPos(pos), str, cc);
                 return true;
             }
         }
@@ -460,14 +467,17 @@ class Reader {
         return false;
     }
 
-    static function _nextNormalExp(stream:Stream, k:HasReadTables, process:(ReaderExp,Void->Void)->Void, ?cc:Void->Void) {
+    static function _nextNormalExp(stream:Stream, k:HasReadTables, process:(ReaderExp,String,Void->Void)->Void, ?cc:Void->Void) {
         if (cc == null) cc = () -> {};
 
-        var nextExp = Reader._read(stream, k);
+        var nextExp = null;
+        var str = stream.recordTransaction(Both, () -> {
+            nextExp = Reader._read(stream, k);
+        });
         // The last expression might be a comment, in which case None will be returned
         switch (nextExp) {
             case Some(nextExp):
-                process(nextExp, cc);
+                process(nextExp, str, cc);
             case None:
                 stream.dropWhitespace(); // If there was a comment, drop whitespace that comes after
         }
@@ -477,7 +487,7 @@ class Reader {
         Read all the expressions in the given stream, processing them one by one while reading.
         They can't be read all at once because some expressions change the Readtable state
     **/
-    public static function readAndProcessCC(stream:Stream, k:HasReadTables, process:(ReaderExp, cc:Void->Void) -> Void, nested = false) {
+    public static function readAndProcessCC(stream:Stream, k:HasReadTables, process:(ReaderExp, String, cc:Void->Void) -> Void, nested = false) {
         _handleNesting(stream, nested);
 
         function afterStartOfFile():Void {
@@ -492,9 +502,9 @@ class Reader {
         _startOfFile(stream, k, process, afterStartOfFile);
     }
 
-    public static function readAndProcess(stream:Stream, k:HasReadTables, process:(ReaderExp) -> Void, nested = false) {
-        var wrappedProcess = (exp, cc) -> {
-            process(exp);
+    public static function readAndProcess(stream:Stream, k:HasReadTables, process:(ReaderExp,String) -> Void, nested = false) {
+        var wrappedProcess = (exp, str, cc) -> {
+            process(exp, str);
         };
         _handleNesting(stream, nested);
         _startOfFile(stream, k, wrappedProcess);
