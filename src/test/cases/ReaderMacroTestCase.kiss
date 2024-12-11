@@ -53,3 +53,7 @@
 
         (Assert.equals "firstsecond" (+
             bob bob))))
+
+(defReaderMacro &eof "" [stream]
+    `(function _testEofMacro []
+        (Assert.pass)))

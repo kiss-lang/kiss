@@ -31,4 +31,7 @@ class ReaderMacroTestCase extends Test {
         _testStartOfLineInMiddle();
     }
     
+    function testEofMacro() {
+        _testEofMacro();
+    }
 }
