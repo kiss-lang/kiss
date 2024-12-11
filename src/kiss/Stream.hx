@@ -213,6 +213,12 @@ class Stream {
         dropChars(content.indexOf(s), false);
     }
 
+    public function tryDropUntil(s:String) {
+        if (content.indexOf(s) != -1) {
+            dropUntil(s);
+        }
+    }
+
     public function dropWhitespace() {
         var trimmed = content.ltrim();
         dropChars(content.length - trimmed.length, false);
