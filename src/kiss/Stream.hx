@@ -125,15 +125,20 @@ class Stream {
     public function dropChars(count:Int, taking:Bool) {
         for (idx in 0...count) {
             switch (content.charAt(idx)) {
+                // newline
                 case "\n":
+                    _currentTab = "";
                     absoluteChar += absolutePerNewline;
                     line += 1;
                     lineLengths.push(column);
                     column = 1;
                     startOfLine = true;
+                // other whitespace character
                 case c if (c.trim() == ""):
+                    _currentTab += c;
                     absoluteChar += 1;
                     column += 1;
+                // non-whitespace
                 default:
                     absoluteChar += 1;
                     column += 1;
@@ -181,6 +186,12 @@ class Stream {
         #if macro
         }, true);
         #end
+    }
+
+    var _currentTab = "";
+
+    public function currentTab():String {
+        return _currentTab;
     }
 
     public function takeChars(count:Int):Option<String> {
