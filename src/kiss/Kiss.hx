@@ -41,13 +41,10 @@ typedef FormDoc = {
 };
 
 typedef KissState = {
+    > HasReadTables,
     className:String,
     pack:Array<String>,
     file:String,
-    readTable:ReadTable,
-    startOfLineReadTable:ReadTable,
-    startOfFileReadTable:ReadTable,
-    endOfFileReadTable:ReadTable,
     fieldForms:Map<String, FieldFormFunction>,
     specialForms:Map<String, SpecialFormFunction>,
     specialFormMacroExpanders:Map<String, MacroFunction>,
@@ -57,7 +54,6 @@ typedef KissState = {
     wrapListExps:Bool,
     loadedFiles:Map<String, Null<ReaderExp>>,
     callAliases:Map<String, ReaderExpDef>,
-    identAliases:Map<String, ReaderExpDef>,
     typeAliases:Map<String, String>,
     fieldList:Array<Field>,
     // TODO This map was originally created to track whether the programmer wrote their own main function, but could also

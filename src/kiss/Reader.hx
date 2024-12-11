@@ -2,12 +2,11 @@ package kiss;
 
 import haxe.ds.Option;
 import kiss.Stream;
-import kiss.Kiss;
 import kiss.ReaderExp;
 
 using kiss.Reader;
+using kiss.ExpBuilder;
 using kiss.Stream;
-using kiss.Helpers;
 using StringTools;
 
 class UnmatchedBracketSignal {
@@ -22,8 +21,15 @@ class UnmatchedBracketSignal {
     }
 }
 
-typedef ReadFunction = (Stream, KissState) -> Null<ReaderExpDef>;
+typedef ReadFunction = (Stream, HasReadTables) -> Null<ReaderExpDef>;
 typedef ReadTable = Map<String, ReadFunction>;
+typedef HasReadTables = {
+    readTable:ReadTable,
+    startOfLineReadTable:ReadTable,
+    startOfFileReadTable:ReadTable,
+    endOfFileReadTable:ReadTable,
+    identAliases:Map<String,ReaderExpDef>
+};
 
 @:allow(kiss.Helpers)
 class Reader {
@@ -163,7 +169,7 @@ class Reader {
         //     -+>countVar {body}
         //     -+>countVar (body)
         // or any of those with the first expression after -> or -+> prefixed by :Void
-        function arrowSyntax(countingLambda:Bool, stream:Stream, k:KissState) {
+        function arrowSyntax(countingLambda:Bool, stream:Stream, k:HasReadTables) {
             var countVar = if (countingLambda) {
                 _assertRead(stream, k);
             } else {
@@ -209,7 +215,7 @@ class Reader {
         readTable["-+>"] = arrowSyntax.bind(true);
 
         // Because macro keys are sorted by length and peekChars(0) returns "", this will be used as the default reader macro:
-        readTable[""] = (stream:Stream, k:KissState) -> {
+        readTable[""] = (stream:Stream, k:HasReadTables) -> {
             var position = stream.position();
             var token = nextToken(stream, "a symbol name");
             // Process dot-access on alias identifiers
@@ -263,11 +269,11 @@ class Reader {
         }
     }
 
-    public static function assertRead(stream:Stream, k:KissState):ReaderExp {
+    public static function assertRead(stream:Stream, k:HasReadTables):ReaderExp {
         return _assertRead(stream, k);
     }
 
-    static function _assertRead(stream:Stream, k:KissState):ReaderExp {
+    static function _assertRead(stream:Stream, k:HasReadTables):ReaderExp {
         var position = stream.position();
         return switch (_read(stream, k)) {
             case Some(exp):
@@ -294,12 +300,12 @@ class Reader {
         return null;
     }
 
-    public static function read(stream:Stream, k:KissState):Option<ReaderExp> {
+    public static function read(stream:Stream, k:HasReadTables):Option<ReaderExp> {
         assertNoPriorState(stream);
         return _read(stream, k);
     }
 
-    static function _read(stream:Stream, k:KissState):Option<ReaderExp> {
+    static function _read(stream:Stream, k:HasReadTables):Option<ReaderExp> {
         var readTable = k.readTable;
         stream.dropWhitespace();
 
@@ -327,7 +333,7 @@ class Reader {
         }
     }
 
-    static function _readOr(stream:Stream, k:KissState, defaultExp:ReaderExp):ReaderExp {
+    static function _readOr(stream:Stream, k:HasReadTables, defaultExp:ReaderExp):ReaderExp {
         return switch (_read(stream, k)) {
             case Some(exp):
                 exp;
@@ -356,12 +362,12 @@ class Reader {
         }
     }
 
-    public static function readExpArray(stream:Stream, end:String, k:KissState, allowEof=false, startingPos=null):Array<ReaderExp> {
+    public static function readExpArray(stream:Stream, end:String, k:HasReadTables, allowEof=false, startingPos=null):Array<ReaderExp> {
         assertNoPriorState(stream);
         return _readExpArray(stream, end, k, allowEof, startingPos);
     }
 
-    static function _readExpArray(stream:Stream, end:String, k:KissState, allowEof=false, startingPos=null):Array<ReaderExp> {
+    static function _readExpArray(stream:Stream, end:String, k:HasReadTables, allowEof=false, startingPos=null):Array<ReaderExp> {
         var array = [];
         if (startingPos == null)
             startingPos = stream.position();
@@ -405,7 +411,7 @@ class Reader {
         Read all the expressions in the given stream, processing them one by one while reading.
         They can't be read all at once because some expressions change the Readtable state
     **/
-    public static function readAndProcess(stream:Stream, k:KissState, process:(ReaderExp) -> Void, nested = false) {
+    public static function readAndProcess(stream:Stream, k:HasReadTables, process:(ReaderExp) -> Void, nested = false) {
         if (nested) {
             nestedReadExpArrayStartPositions.push(readExpArrayStartPositions);
             readExpArrayStartPositions = [];
@@ -469,7 +475,7 @@ class Reader {
     }
 
     // Read a string literal OR a shell section which supports interpolation
-    static function readString(stream:Stream, k:KissState, shell = false) {
+    static function readString(stream:Stream, k:HasReadTables, shell = false) {
         var pos = stream.position();
         var stringParts:Array<ReaderExp> = [];
         var currentStringPart = "";
@@ -554,7 +560,7 @@ class Reader {
     }
 
     // Read a raw string literal
-    static function readRawString(stream:Stream, k:KissState) {
+    static function readRawString(stream:Stream, k:HasReadTables) {
         var terminator = '"#';
         do {
             var next = stream.expect('# or "', () -> stream.takeChars(1));

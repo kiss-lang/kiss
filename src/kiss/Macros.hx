@@ -610,7 +610,7 @@ class Macros {
             if (streamArgName == null) throw messageForBadArgs;
 
             for (s in strings) {
-                table[s] = (stream, k) -> {
+                table[s] = (stream, k:Dynamic) -> {
                     if (strings.length > 1) {
                         stream.putBackString(s);
                     }
