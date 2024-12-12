@@ -123,6 +123,9 @@ class Stream {
 
     /** Every drop call should end up calling dropChars() or the position tracker and recording will be wrong. **/
     public function dropChars(count:Int, taking:Bool) {
+        if (count < 0) {
+            error(this, "Can't drop negative characters");
+        }
         for (idx in 0...count) {
             switch (content.charAt(idx)) {
                 // newline
