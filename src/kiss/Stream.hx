@@ -194,10 +194,15 @@ class Stream {
         return _currentTab;
     }
 
+    public var linePrefix = '';
+
     public function takeChars(count:Int):Option<String> {
         if (count > content.length)
             return None;
         var toReturn = content.substr(0, count);
+        if (linePrefix.length > 0) {
+            toReturn = toReturn.replace('\n{linePrefix}', '\n');
+        }
         dropChars(count, true);
         return Some(toReturn);
     }
