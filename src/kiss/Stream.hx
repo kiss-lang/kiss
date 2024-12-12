@@ -287,6 +287,22 @@ class Stream {
         return Some(toReturn);
     }
 
+    public function dropOneOf(options:Array<String>) {
+        switch(_dropWhileOneOf(options, true, true)) {
+            case None:
+                error(this, 'expected to drop one of ${options}');
+            default:
+        }
+    }
+
+    public function takeOneOf(options:Array<String>) {
+        return _dropWhileOneOf(options, true, true);
+    }
+
+    function _dropOneOf(options:Array<String>, take:Bool) {
+        _dropWhileOneOf(options, take, true);
+    }
+
     public function dropWhileOneOf(options:Array<String>) {
         _dropWhileOneOf(options, false);
     }
@@ -295,7 +311,7 @@ class Stream {
         return _dropWhileOneOf(options, true);
     }
 
-    function _dropWhileOneOf(options:Array<String>, take:Bool):Option<String> {
+    function _dropWhileOneOf(options:Array<String>, take:Bool, justOnce=false):Option<String> {
         var taken = "";
 
         var lengths = [for (option in options) option.length => true];
@@ -307,7 +323,7 @@ class Stream {
             for (length => _ in lengths) {
                 var sample = content.substr(0, length);
                 if (optsMap.exists(sample)) {
-                    nextIs = true;
+                    nextIs = !justOnce && true;
                     if (take) {
                         taken += sample;
                     }
