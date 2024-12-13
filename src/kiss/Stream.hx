@@ -180,6 +180,12 @@ class Stream {
                     case "\n":
                         line -= 1;
                         column = lineLengths.pop();
+                    // Revert tabs
+                    case c if (c.trim() == ""):
+                        var lastNewlineIdx = content.lastIndexOf('\n', absoluteChar + 1);
+                        if (lastNewlineIdx >= 0 && content.substr(lastNewlineIdx,absoluteChar + 1).trim() == "")
+                            _currentTab = _currentTab.substr(0, _currentTab.length - 1);
+                        column -= 1;
                     default:
                         column -= 1;
                 }
