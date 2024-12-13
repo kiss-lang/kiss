@@ -476,7 +476,7 @@ class AsyncEmbeddedScript2 {
             #if profileKiss
             Kiss.measure('Compiling kiss: $scriptFile', () -> {
             #end
-                function process(nextExp:ReaderExp) {
+                function process(nextExp:ReaderExp, str) {
                     #if (kissCache && !lua)
                     var cacheKey = Reader.toString(nextExp.def);
                     if (cache.exists(Prelude.hashableString(cacheKey))) {
@@ -490,7 +490,7 @@ class AsyncEmbeddedScript2 {
                     if (autoLabelInterval > 0 && commandList.length > lastLabelIp + autoLabelInterval){
                         var b = nextExp.expBuilder();
                         lastLabelIp = commandList.length;
-                        process(b.callSymbol("label", [b.symbol("auto")]));
+                        process(b.callSymbol("label", [b.symbol("auto")]), "(label auto)");
                     }
 
                     nextExp = Kiss._try(()->Kiss.macroExpand(nextExp, k));
@@ -502,7 +502,7 @@ class AsyncEmbeddedScript2 {
                         case CallExp({pos: _, def: Symbol("commands")},
                         commands):
                             for (exp in commands) {
-                                process(exp);
+                                process(exp, Reader.toString(exp.def));
                             }
                             return;
                         default:

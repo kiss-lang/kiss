@@ -313,7 +313,7 @@ class Main {
 
         if (args.indexOf("--all") != -1) {
             var kissInputStream = Stream.fromString(Sys.stdin().readAll().toString());
-            Reader.readAndProcess(kissInputStream, k, (readerExp) -> {
+            Reader.readAndProcess(kissInputStream, k, (readerExp, str) -> {
                 print(Kiss.readerExpToHaxeExpr(readerExp, k).toString());
             });
         } else {
@@ -334,7 +334,7 @@ class Main {
                     }
 
                     var kissInputStream = Stream.fromString(line);
-                    Reader.readAndProcess(kissInputStream, k, (readerExp) -> {
+                    Reader.readAndProcess(kissInputStream, k, (readerExp, str) -> {
                         print(Kiss.readerExpToHaxeExpr(readerExp, k).toString());
                     });
 
