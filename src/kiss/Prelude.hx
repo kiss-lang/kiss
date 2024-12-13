@@ -554,6 +554,25 @@ class Prelude {
         };
     }
 
+    public static function argList(exp:ReaderExp, forThis:String, allowEmpty = true):Array<ReaderExp> {
+        return switch (exp.def) {
+            // At macro-time, a list of exps could be passed instead of a ListExp. Handle
+            // that tricky case:
+            case null if (Std.isOfType(exp, Array)):
+                var expList = cast(exp, Array<Dynamic>);
+                var expDynamic:Dynamic = exp;
+                argList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty);
+            case ListExp([]) if (allowEmpty):
+                [];
+            case ListExp([]) if (!allowEmpty):
+                throw KissError.fromExp(exp, 'arg list for $forThis must not be empty');
+            case ListExp(argExps):
+                argExps;
+            default:
+                throw KissError.fromExp(exp, '$forThis arg list should be a list or list expression');
+        };
+    }
+
     public static function symbolNameValue(s:ReaderExp, allowTyped:Null<Bool> = false, allowMeta:Null<Bool> = false):String {
         return switch (s.def) {
             case Symbol(name): name;

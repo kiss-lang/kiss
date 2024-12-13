@@ -698,22 +698,7 @@ class Helpers {
     }
 
     public static function argList(exp:ReaderExp, forThis:String, allowEmpty = true):Array<ReaderExp> {
-        return switch (exp.def) {
-            // At macro-time, a list of exps could be passed instead of a ListExp. Handle
-            // that tricky case:
-            case null if (Std.isOfType(exp, Array)):
-                var expList = cast(exp, Array<Dynamic>);
-                var expDynamic:Dynamic = exp;
-                argList({pos:expList[0].pos, def: ListExp(expDynamic)}, forThis, allowEmpty);
-            case ListExp([]) if (allowEmpty):
-                [];
-            case ListExp([]) if (!allowEmpty):
-                throw KissError.fromExp(exp, 'arg list for $forThis must not be empty');
-            case ListExp(argExps):
-                argExps;
-            default:
-                throw KissError.fromExp(exp, '$forThis arg list should be a list or list expression');
-        };
+        return Prelude.argList(exp, forThis, allowEmpty);
     }
 
     public static function bindingList(exp:ReaderExp, forThis:String, allowEmpty = false):Array<ReaderExp> {
