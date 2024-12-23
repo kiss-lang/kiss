@@ -666,6 +666,8 @@ class Helpers {
                 CallExp(recurse(func), evalUnquoteLists(callArgs, innerRunAtCompileTime).map(recurse));
             case ListExp(elements):
                 ListExp(evalUnquoteLists(elements, innerRunAtCompileTime).map(recurse));
+            case BraceExp(elements):
+                BraceExp(evalUnquoteLists(elements, innerRunAtCompileTime).map(recurse));
             case TypedExp(type, innerExp):
                 TypedExp(type, recurse(innerExp));
             case FieldExp(field, innerExp, safe):
@@ -764,6 +766,8 @@ class Helpers {
                 CallExp(func(f), Lambda.map(args, func));
             case ListExp(args):
                 ListExp(Lambda.map(args, func));
+            case BraceExp(args):
+                BraceExp(Lambda.map(args, func));
             case TypedExp(type, exp):
                 TypedExp(type, func(exp));
             case MetaExp(meta, exp):

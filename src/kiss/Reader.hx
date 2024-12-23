@@ -31,10 +31,16 @@ typedef HasReadTables = {
     identAliases:Map<String,ReaderExpDef>
 };
 
+typedef ReadTableOptions = {
+    // When this is false (the default), {<...>} always becomes (begin <...>) instead of BraceExp(<...>)
+    ?keepBraceExps:Bool
+};
+
 @:allow(kiss.Helpers)
 class Reader {
     // The built-in readtable
-    public static function builtins() {
+    public static function builtins(?options:ReadTableOptions) {
+        if (options == null) options = {};
         var readTable:ReadTable = [];
 
         readTable["("] = (stream, k) -> {
@@ -49,9 +55,13 @@ class Reader {
         readTable["[::"] = (stream, k) -> ListEatingExp(_readExpArray(stream, "]", k));
         readTable["..."] = (stream, k) -> ListRestExp(nextToken(stream, "name for list-eating rest exp", true));
 
-        // Provides a nice syntactic sugar for (if... {<then block...>} {<else block...>}),
-        // and also handles string interpolation cases like "${exp}moreString":
-        readTable["{"] = (stream:Stream, k) -> CallExp(Symbol("begin").withPos(stream.position()), _readExpArray(stream, "}", k));
+        if (options.keepBraceExps) {
+            readTable["{"] = (stream, k) -> BraceExp(_readExpArray(stream, "}", k));
+        } else {
+            // Provides a nice syntactic sugar for (if... {<then block...>} {<else block...>}),
+            // and also handles string interpolation cases like "${exp}moreString":
+            readTable["{"] = (stream:Stream, k) -> CallExp(Symbol("begin").withPos(stream.position()), _readExpArray(stream, "}", k));
+        }
 
         readTable["<>["] = (stream, k) -> TypeParams(_readExpArray(stream, "]", k));
 
@@ -670,6 +680,16 @@ class Reader {
                     }
                 ].join(" ");
                 str += ']';
+                str;
+            case BraceExp(exps):
+                // {e1 e2 e3}
+                var str = '{';
+                str += [
+                    for (exp in exps) {
+                        exp.def.toString();
+                    }
+                ].join(" ");
+                str += '}';
                 str;
             case TypeParams(exps):
                 // <>[T1 T2 T3]

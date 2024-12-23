@@ -10,6 +10,7 @@ typedef ReaderExp = {
 enum ReaderExpDef {
     CallExp(func:ReaderExp, args:Array<ReaderExp>); // (f a1 a2...)
     ListExp(exps:Array<ReaderExp>); // [v1 v2 v3]
+    BraceExp(exps:Array<ReaderExp>); // {e1 e2 e3}
     StrExp(s:String); // "literal"
     Symbol(name:String); // s
     RawHaxe(code:String); // #| haxeCode() |# // deprecated!
