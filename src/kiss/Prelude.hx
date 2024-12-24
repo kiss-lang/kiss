@@ -291,7 +291,7 @@ class Prelude {
 
     public static var concat:Function = Reflect.makeVarArgs(_concat);
 
-    static function _zip(iterables:Array<Dynamic>, extraHandling:ExtraElementHandling):kiss.List<kiss.List<Dynamic>> {
+    public static function _zip(iterables:Array<Dynamic>, extraHandling:ExtraElementHandling):kiss.List<kiss.List<Dynamic>> {
         var lists = [];
         var iterators = [for (iterable in iterables) iterable.iterator()];
 
