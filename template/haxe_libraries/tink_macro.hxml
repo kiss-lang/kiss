@@ -1,0 +1,4 @@
+# @install: lix --silent download "gh://github.com/kiss-lang/tink_macro#8b60a484b1141d1176b34ba3af9ac65b499079ff" into tink_macro/1.0.3/github/8b60a484b1141d1176b34ba3af9ac65b499079ff
+-lib tink_core
+-cp ${HAXE_LIBCACHE}/tink_macro/1.0.3/github/8b60a484b1141d1176b34ba3af9ac65b499079ff/src
+-D tink_macro=1.0.3

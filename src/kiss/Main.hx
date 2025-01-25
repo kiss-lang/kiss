@@ -6,6 +6,7 @@ import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.macro.Type;
 import kiss.Kiss;
+import kiss.Helpers;
 import kiss.Reader;
 import kiss.Stream;
 
@@ -20,10 +21,19 @@ import sys.io.Process;
 import sys.FileSystem;
 
 using StringTools;
+using haxe.io.Path;
 
 class Main {
     static function main() {
         macroMain();
+    }
+
+    static function libPath(lib:String) {
+        #if macro
+        return Helpers.libPath(lib);
+        #end
+        throw 'Tried to get libPath outside of macroMain()';
+        return "";
     }
 
     // When called from the command-line, Kiss has various subcommands, some of which can only run in macro context
@@ -92,7 +102,7 @@ class Main {
         return input;
     }
 
-    static function _makeFileForNewProject(templateDir:String, templateFile:Array<String>, workingDir:String, projectName:String, pkg:String) {
+    static function _makeFileForNewProject(templateDir:String, templateFile:Array<String>, workingDir:String, projectName:String, description:String, pkg:String) {
         // Expand this list when making new templates with different binary extensions
         var extensionsForBytes = [
             "png"
@@ -108,14 +118,21 @@ class Main {
 
         var fullTemplateFilePath = Path.join([templateDir, "template"].concat(templateFile));
         var newFileContent:Dynamic = getContent(fullTemplateFilePath);
-        if (replaceStringTemplate)
-            newFileContent = StringTools.replace(newFileContent, "template", pkg);
+        if (replaceStringTemplate) {
+            var projectOrPackageName = if (['hx', 'hxml', 'kiss'].contains(fullTemplateFilePath.extension())) {
+                pkg;
+            } else {
+                projectName;
+            }
+            newFileContent = StringTools.replace(newFileContent, "template", projectOrPackageName);
+            newFileContent = StringTools.replace(newFileContent, "{{description}}", pkg);
+        }
         var templateFileInNewProject = [for (part in templateFile) if (part == "template") pkg else part];
         var newFilePath = Path.join([workingDir, projectName].concat(templateFileInNewProject));
         saveContent(newFilePath, newFileContent);
     }
 
-    static function _makeFolderForNewProject(templateDir:String, templateFolder:Array<String>, workingDir:String, projectName:String, pkg:String) {
+    static function _makeFolderForNewProject(templateDir:String, templateFolder:Array<String>, workingDir:String, projectName:String, description:String, pkg:String) {
         var fullTemplateFolderPath = Path.join([templateDir, "template"].concat(templateFolder));
         var templateFolderInNewProject = [for (part in templateFolder) if (part == "template") pkg else part];
         var newFolderPath = Path.join([workingDir, projectName].concat(templateFolderInNewProject));
@@ -123,30 +140,32 @@ class Main {
 
         for (fileOrFolder in FileSystem.readDirectory(fullTemplateFolderPath)) {
             if (FileSystem.isDirectory(Path.join([fullTemplateFolderPath, fileOrFolder]))) {
-                _makeFolderForNewProject(templateDir, templateFolder.concat([fileOrFolder]), workingDir, projectName, pkg);
+                _makeFolderForNewProject(templateDir, templateFolder.concat([fileOrFolder]), workingDir, projectName, description, pkg);
             } else {
-                _makeFileForNewProject(templateDir, templateFolder.concat([fileOrFolder]), workingDir, projectName, pkg);
+                _makeFileForNewProject(templateDir, templateFolder.concat([fileOrFolder]), workingDir, projectName, description, pkg);
             }
         }
     }
 
     static function newProject(args:Array<String>) {
-        var kissLibPath = new Process("haxelib", ["libpath", "kiss"]).stdout.readAll().toString().trim();
+        var kissLibPath = libPath("kiss");
         var name = promptFor("name");
-        // TODO put the prompted name and description in a README.md
         var pkg = name.toLowerCase().replace("-", "_");
+        var description = "";
         var haxelibJson = {
             "name": name,
             "contributors": promptFor("authors (comma-separated)").split(",").map(StringTools.trim),
-            // TODO can make the default URL actually point to the projects subdirectory... but only want that functionality if the working dir is in kisslang/projects
-            "url": promptFor("url", "https://github.com/NQNStudios/kisslang"),
+            "url": promptFor("url", 'https://github.com/kiss-lang/${name}'),
             "license": promptFor("license", "LGPL"),
             "tags": {
                 var t = promptFor("tags (comma-separated)", "").split(",").map(StringTools.trim);
                 t.remove("");
                 t;
             },
-            "description": promptFor("description", ""),
+            "description": {
+                description = promptFor("description", "");
+                description;
+            },
             "version": "0.0.0",
             "releasenote": "",
             "classPath": "src/",
@@ -155,11 +174,13 @@ class Main {
                 "kiss": ""
             }
         };
-        var workingDir = Sys.args().pop();
-        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissLibPath, _, workingDir, name, pkg);
-        FileSystem.createDirectory(Path.join([workingDir, name, "src", pkg]));
-        makeFileForNewProject(["src", "template", "Main.hx"]);
-        makeFileForNewProject(["src", "template", "Main_.kiss"]);
+        var workingDir = Sys.getCwd();
+        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissLibPath, _, workingDir, name, description, pkg);
+        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissLibPath, _, workingDir, name, description, pkg);
+        makeFolderForNewProject(["haxe_libraries"]);
+        makeFolderForNewProject(["src"]);
+        makeFileForNewProject([".haxerc"]);
+        makeFileForNewProject(["build.hxml"]);
         makeFileForNewProject(["build.hxml"]);
         makeFileForNewProject(["test.sh"]);
         File.saveContent(Path.join([workingDir, name, 'haxelib.json']), Json.stringify(haxelibJson, null, "\t"));
@@ -173,7 +194,7 @@ class Main {
         var background = promptFor("background color", "#000000");
 
         var kissFlixelLibPath = new Process("haxelib", ["libpath", "kiss-flixel"]).stdout.readAll().toString().trim();
-        var workingDir = Sys.args().pop();
+        var workingDir = Sys.getCwd();
         FileSystem.createDirectory(Path.join([workingDir, title]));
 
         // Substitute the specified values into the Project.xml:
@@ -191,8 +212,8 @@ class Main {
         firstWindowElement.set("background", background);
 
         File.saveContent(Path.join([workingDir, title, 'Project.xml']), projectXml.toString());
-        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissFlixelLibPath, _, workingDir, title, "");
-        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissFlixelLibPath, _, workingDir, title, "");
+        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissFlixelLibPath, _, workingDir, title, "", "");
+        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissFlixelLibPath, _, workingDir, title, "", "");
         makeFolderForNewProject([".vscode"]);
         makeFolderForNewProject(["assets"]);
         makeFolderForNewProject(["source"]);
@@ -204,12 +225,12 @@ class Main {
         var title = promptFor("title (lower-case!)").toLowerCase();
         var pkg = title.replace("-", "_");
         var kissExpressLibPath = new Process("haxelib", ["libpath", "kiss-express"]).stdout.readAll().toString().trim();
-        var workingDir = Sys.args().pop();
+        var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
 
-        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissExpressLibPath, _, workingDir, title, pkg);
-        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissExpressLibPath, _, workingDir, title, pkg);
+        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissExpressLibPath, _, workingDir, title, "", pkg);
+        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissExpressLibPath, _, workingDir, title, "", pkg);
         makeFolderForNewProject(["src", "template"]);
         makeFileForNewProject([".gitignore"]);
         makeFileForNewProject(["build.hxml"]);
@@ -225,27 +246,22 @@ class Main {
 
     static function newVscodeProject(args:Array<String>) {
 		var title = promptFor("title (lower-case!)").toLowerCase();
+        var description = promptFor("description");
 		var pkg = title.replace("-", "_");
         var kissVscodeApiLibPath = new Process("haxelib", ["libpath", "kiss-vscode-api"]).stdout.readAll().toString().trim();
-        var workingDir = Sys.args().pop();
+        var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
 
-        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissVscodeApiLibPath, _, workingDir, title, pkg);
-        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissVscodeApiLibPath, _, workingDir, title, pkg);
+        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissVscodeApiLibPath, _, workingDir, title, description, pkg);
+        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissVscodeApiLibPath, _, workingDir, title, description, pkg);
         makeFolderForNewProject(["src"]);
         makeFolderForNewProject([".vscode"]);
         makeFileForNewProject([".gitignore"]);
         makeFileForNewProject([".vscodeignore"]);
         makeFileForNewProject(["README.md"]);
         makeFileForNewProject(["build.hxml"]);
-        {
-            makeFileForNewProject(["package.json"]);
-            var packageFile = Path.join([projectDir, "package.json"]);
-            var packageJson = Json.parse(File.getContent(packageFile));
-            packageJson.name = title;
-            File.saveContent(packageFile, Json.stringify(packageJson, null, "\t"));
-        }
+        makeFileForNewProject(["package.json"]);
         makeFileForNewProject(["test.sh"]);
     }
 
@@ -261,12 +277,12 @@ class Main {
             urlPatterns.push(nextPattern);
         }
         var kissFirefoxLibPath = new Process("haxelib", ["libpath", "kiss-firefox"]).stdout.readAll().toString().trim();
-        var workingDir = Sys.args().pop();
+        var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
 
-        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissFirefoxLibPath, _, workingDir, title, pkg);
-        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissFirefoxLibPath, _, workingDir, title, pkg);
+        var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissFirefoxLibPath, _, workingDir, title, description, pkg);
+        var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissFirefoxLibPath, _, workingDir, title, description, pkg);
         makeFolderForNewProject(["src"]);
         makeFolderForNewProject(["icons"]);
         makeFileForNewProject([".gitignore"]);

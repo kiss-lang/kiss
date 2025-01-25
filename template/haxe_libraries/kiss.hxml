@@ -1,0 +1,12 @@
+# @install: lix --silent download "gh://github.com/kiss-lang/kiss#877b965812be5013c514d03d6f94a074495a53fa" into kiss/0.0.1/github/877b965812be5013c514d03d6f94a074495a53fa
+# @run: haxelib run-dir kiss "${HAXE_LIBCACHE}/kiss/0.0.1/github/877b965812be5013c514d03d6f94a074495a53fa"
+-lib haxe-strings
+-lib hscript
+-lib tink_json
+-lib tink_macro
+-lib tink_syntaxhub
+-lib uuid
+-cp ${HAXE_LIBCACHE}/kiss/0.0.1/github/877b965812be5013c514d03d6f94a074495a53fa/src
+-D kiss=0.0.1
+-w -WUnusedPattern
+--macro kiss.KissFrontend.use()
