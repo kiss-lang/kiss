@@ -282,6 +282,7 @@ class Main {
     }
 
     static function newFirefoxProject(args:Array<String>) {
+        var kissFirefoxLibPath = libPath("kiss-firefox");
 		var title = promptFor("title (lower-case!)").toLowerCase();
 		var description = promptFor("description");
 		var pkg = title.replace("-", "_");
@@ -292,7 +293,6 @@ class Main {
                 break;
             urlPatterns.push(nextPattern);
         }
-        var kissFirefoxLibPath = new Process("haxelib", ["libpath", "kiss-firefox"]).stdout.readAll().toString().trim();
         var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
@@ -302,6 +302,9 @@ class Main {
         makeFolderForNewProject(["src"]);
         makeFolderForNewProject(["icons"]);
         makeFileForNewProject([".gitignore"]);
+        makeFileForNewProject([".haxerc"]);
+        Sys.setCwd(projectDir);
+        Sys.println(new Process("lix", ["install", "gh:kiss-lang/kiss-firefox"]).stdout.readAll().toString().trim());
         makeFileForNewProject(["build.hxml"]);
         {
             makeFileForNewProject(["manifest.json"]);
