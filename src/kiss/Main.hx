@@ -234,9 +234,9 @@ class Main {
     }
 
     static function newExpressProject(args:Array<String>) {
+        var kissExpressLibPath = libPath("kiss-express");
         var title = promptFor("title (lower-case!)").toLowerCase();
         var pkg = title.replace("-", "_");
-        var kissExpressLibPath = libPath("kiss-express");
         var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
