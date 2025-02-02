@@ -236,15 +236,19 @@ class Main {
     static function newExpressProject(args:Array<String>) {
         var title = promptFor("title (lower-case!)").toLowerCase();
         var pkg = title.replace("-", "_");
-        var kissExpressLibPath = new Process("haxelib", ["libpath", "kiss-express"]).stdout.readAll().toString().trim();
+        var kissExpressLibPath = libPath("kiss-express");
         var workingDir = Sys.getCwd();
         var projectDir = Path.join([workingDir, title]);
         FileSystem.createDirectory(projectDir);
 
         var makeFileForNewProject:haxe.Constraints.Function = _makeFileForNewProject.bind(kissExpressLibPath, _, workingDir, title, "", pkg);
         var makeFolderForNewProject:haxe.Constraints.Function = _makeFolderForNewProject.bind(kissExpressLibPath, _, workingDir, title, "", pkg);
+        makeFolderForNewProject(["externs"]);
         makeFolderForNewProject(["src", "template"]);
         makeFileForNewProject([".gitignore"]);
+        makeFileForNewProject([".haxerc"]);
+        Sys.setCwd(projectDir);
+        Sys.println(new Process("lix", ["install", "gh:kiss-lang/kiss-express"]).stdout.readAll().toString().trim());
         makeFileForNewProject(["build.hxml"]);
         {
             makeFileForNewProject(["package.json"]);
