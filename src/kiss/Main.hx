@@ -30,7 +30,19 @@ class Main {
 
     static function libPath(lib:String) {
         #if macro
-        return Helpers.libPath(lib);
+        try {
+            return Helpers.libPath(lib);
+        } catch (e) {
+            // The library isn't in the classpaths but it might be in the same folder
+            // as kiss.
+            var kissPath = Helpers.libPath("kiss");
+            var failureMessage = "Can't find libPath for " + lib + " relative to " + kissPath;
+            if (FileSystem.isDirectory('${kissPath.directory()}/${lib}')) {
+                return '${kissPath.directory()}/${lib}';
+            } else {
+                throw failureMessage;
+            }
+        }
         #end
         throw 'Tried to get libPath outside of macroMain()';
         return "";
