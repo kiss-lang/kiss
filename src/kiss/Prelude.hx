@@ -604,6 +604,24 @@ class Prelude {
         };
     }
 
+    public static function callable(callExp:ReaderExp) {
+        return switch (callExp.def) {
+            case CallExp(_callable, _):
+                _callable;
+            default:
+                throw KissError.fromExp(callExp, 'Expected a CallExp');
+        }
+    }
+
+    public static function callArgs(callExp:ReaderExp) {
+        return switch (callExp.def) {
+            case CallExp(_, _args):
+                _args;
+            default:
+                throw KissError.fromExp(callExp, 'Expected a CallExp');
+        }
+    }
+
     public static function uuid() {
         return Uuid.v4().toShort();
     }

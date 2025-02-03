@@ -48,6 +48,7 @@ class ExpBuilder {
                 args.push(_else);
             return callSymbol("if", args);
         }
+#if (sys || hxnodejs)
         function throwAssertOrNeverError(messageExp:ReaderExp) {
             var failureError = KissError.fromExp(posRef, "").toString(AssertionFail);
             var colonsInPrefix = if (Sys.systemName() == "Windows") 5 else 4;
@@ -55,6 +56,7 @@ class ExpBuilder {
                 callSymbol("kiss.Prelude.runtimeInsertAssertionMessage", [messageExp, str(failureError), int(colonsInPrefix)])
             ]);
         }
+#end
         function whenUnless(which:String, condition:ReaderExp, body:Array<ReaderExp>) {
             return callSymbol(which, [condition].concat(body));
         }
@@ -83,6 +85,7 @@ class ExpBuilder {
             let: let,
             objectWith: objectWith,
             expFromDef: (def:ReaderExpDef) -> def.withPosOf(posRef),
+#if (sys || hxnodejs)
             // Only use within assertion macros
             throwAssertionError: () -> {
                 var usage = "throwAssertionError can only be used in a builder of an assertion macro";
@@ -110,6 +113,7 @@ class ExpBuilder {
                         posRef;
                 }
             },
+#end
             // Compile-time only!
             throwKissError: (reason:String) -> {
                 callSymbol("throw", [
