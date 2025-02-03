@@ -987,7 +987,9 @@ class Prelude {
     #if js
     public static dynamic function makeAwaitLetDefaultCatch<TOut>(binding:String):PromiseHandler<Dynamic,TOut> {
         return function (reason:Dynamic):Promise<TOut> {
-            throw 'awaitLet $binding rejected promise: $reason';
+            var message = 'awaitLet $binding rejected promise: $reason';
+            print(message);
+            throw message;
         };
     }
 
