@@ -461,6 +461,10 @@ class Helpers {
                 UnquoteList(removeTypeAnnotations(innerExp));
             case None:
                 None;
+            case ListEatingExp(exps):
+                ListEatingExp(exps.map(removeTypeAnnotations));
+            case ListRestExp(name):
+                ListRestExp(name);
             default:
                 throw KissError.fromExp(exp, 'cannot remove type annotations');
         };
