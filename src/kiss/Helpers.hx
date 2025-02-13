@@ -736,11 +736,14 @@ class Helpers {
 
             while (matchingPartIndex != -1) {
                 var path = parts.slice(0, matchingPartIndex + 1).join("/");
-
+                
                 // TODO support all possible classPath formats:
 
                 // <libname>/<classPath...>
                 if (FileSystem.exists(Path.join([path, "haxelib.json"]))) return path;
+
+                // <libname>/git/<classPath...>
+                if (FileSystem.exists(Path.join([parts.slice(0, matchingPartIndex + 2).join("/"), "haxelib.json"]))) return path;
 
                 // <libname>/<version>/haxelib/<classPath...>
                 if (parts[matchingPartIndex + 2] == "haxelib") {

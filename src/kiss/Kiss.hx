@@ -860,7 +860,7 @@ class Kiss {
     }
 
     // Core functionality of Kiss: returns ReaderExp when macroExpandOnly is true, and haxe.macro.Expr otherwise
-    public static function macroExpandAndConvert(exp:ReaderExp, k:KissState, macroExpandOnly:Bool, ?metaNames, ?metaParams:Array<Array<Expr>>, ?metaPos:Array<haxe.macro.Position>):Either<ReaderExp,Expr> {
+    public static function macroExpandAndConvert(exp:ReaderExp, k:KissState, macroExpandOnly:Bool, ?metaNames, ?metaParams:Array<Array<Expr>>, ?metaPos:Array<haxe.macro.Expr.Position>):Either<ReaderExp,Expr> {
         #if kissCache
         var str = Reader.toString(exp.def);
         if (!macroExpandOnly) {
