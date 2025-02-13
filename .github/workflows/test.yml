@@ -50,6 +50,8 @@ jobs:
         if: matrix.test-target == 'py'
 
       # lua
+      - run: sudo apt-get install libreadline-dev
+        if: contains(matrix.test-target, 'lua')
       - run: pip install --user hererocks && hererocks env --$LUA -rlatest && source env/bin/activate && ./build-scripts/lua/install-deps.sh
         if: contains(matrix.test-target, 'lua')
 
