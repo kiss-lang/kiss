@@ -42,6 +42,7 @@ class SpecialForms {
             k.formDocs[newName] = k.formDocs[oldName];
         }
 
+        var unops = ["++", "--"];
         map["begin"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             // Sometimes empty blocks are useful, so a checkNumArgs() seems unnecessary here for now.
 
@@ -53,7 +54,7 @@ class SpecialForms {
             }
             for (bodyExp in args) {
                 switch(bodyExp.def) {
-                    case Symbol(_) if (lastArg != null):
+                    case Symbol(name) if (lastArg != null && !unops.contains(name.substr(0, 2)) && !unops.contains(name.substr(name.length - 2, 2))):
                         KissError.warnFromExp(bodyExp, "This looks like an unused value");
                     default:
                 }
