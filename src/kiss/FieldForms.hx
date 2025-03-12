@@ -141,13 +141,27 @@ class FieldForms {
                     throw KissError.fromExp(wholeExp, 'Function or method $field does not exist to be redefined');
                 }
 
-                switch (args[1].def) {
+                var access = originalFunction.access;
+                var newFieldNameExp = switch(args[1].def) {
+                    case MetaExp("public", innerExp):
+                        access.remove(APrivate);
+                        access.push(APublic);
+                        innerExp.def;
+                    case MetaExp("private", innerExp):
+                        access.remove(APublic);
+                        access.push(APrivate);
+                        innerExp.def;
+                    case other:
+                        other;
+                }
+
+                switch (newFieldNameExp) {
                     case Symbol(newFieldName):
                         var newField = {
                             pos: wholeExp.macroPos(),
                             name: newFieldName,
                             meta: originalFunction.meta,
-                            access: originalFunction.access,
+                            access: access,
                             kind: FFun(switch(originalFunction.kind) {
                                 case FFun({ret: ret, params: params, args: originalArgs}):
                                     var argIndexMap = new Map<String,Int>();
