@@ -140,6 +140,13 @@ class Main {
             newFileContent = StringTools.replace(newFileContent, "{{description}}", pkg);
         }
         var templateFileInNewProject = [for (part in templateFile) if (part == "template") pkg else part];
+        var lastPart = templateFileInNewProject.pop();
+        var base = lastPart.withoutExtension();
+        var ext = lastPart.extension();
+        if(base == "template"){
+            lastPart = pkg.withExtension(ext);
+        }
+        templateFileInNewProject.push(lastPart);
         var newFilePath = Path.join([workingDir, projectName].concat(templateFileInNewProject));
         saveContent(newFilePath, newFileContent);
     }
@@ -246,6 +253,7 @@ class Main {
         makeFolderForNewProject(["externs"]);
         makeFolderForNewProject(["src", "template"]);
         makeFileForNewProject([".gitignore"]);
+        makeFileForNewProject(["template.service"]);
         makeFileForNewProject([".haxerc"]);
         Sys.setCwd(projectDir);
         Sys.println(new Process("lix", ["install", "gh:kiss-lang/kiss-express"]).stdout.readAll().toString().trim());
