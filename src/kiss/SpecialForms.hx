@@ -233,7 +233,7 @@ class SpecialForms {
             };
         }
 
-        k.doc("deflocal", 2, 3, "(localVar <optional :type> <variable> <optional: &mut> <value>)");
+        k.doc("deflocal", 2, 3, "(localVar <optional: &mut> <optional :type> <variable> <value>)");
         map["deflocal"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             k.localVarCalls.push(wholeExp);
             k.localVarWarning();
