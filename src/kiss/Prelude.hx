@@ -962,6 +962,7 @@ class Prelude {
             printStr(script);
             printStr('#################');
             FileSystem.deleteFile(tempScript);
+            print(e);
             throw e;
         }
 
