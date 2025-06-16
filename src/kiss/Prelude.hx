@@ -936,7 +936,7 @@ class Prelude {
 
     static var shellCount = 0;
 
-    public static function shellExecute(script:String, shell:String) {
+    public static function shellExecute(script:String, shell:String):String {
         #if ((sys || hxnodejs) && !frontend)
         if (shell.length == 0) {
             shell = if (Sys.systemName() == "Windows") "cmd /c" else "bash";
@@ -955,7 +955,7 @@ class Prelude {
             if (Sys.systemName() != "Windows") tempScript = joinPath(Sys.getCwd(), tempScript);
             var parts = shell.split(" ").concat([tempScript]);
             var shell = parts.shift();
-            assertProcess(shell, parts);
+            return assertProcess(shell, parts);
             FileSystem.deleteFile(tempScript);
         } catch (e) {
             printStr('# Failing script:');
