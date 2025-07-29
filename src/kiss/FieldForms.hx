@@ -141,7 +141,7 @@ class FieldForms {
                     throw KissError.fromExp(wholeExp, 'Function or method $field does not exist to be redefined');
                 }
 
-                var access = originalFunction.access;
+                var access = originalFunction.access.copy();
                 var newFieldNameExp = switch(args[1].def) {
                     case MetaExp("public", innerExp):
                         access.remove(APrivate);
