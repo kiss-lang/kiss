@@ -532,7 +532,7 @@ class Macros {
                     args[innerArgNames.shift()] = innerExps[idx];
                 }
                 for (idx in optIndex...restIndex) {
-                    args[innerArgNames.shift()] = if (exps.length > idx) innerExps[idx] else null;
+                    args[innerArgNames.shift()] = if (innerExps.length > idx) innerExps[idx] else null;
                 }
                 if (innerArgNames.length > 0) {
                     var restArgs = innerExps.slice(restIndex);
