@@ -1,0 +1,7 @@
+-lib kiss
+-lib vscode
+-lib hxnodejs
+-lib re-flex
+-cp /Users/nat/repos/kiss-vscode-api/src/
+-D kiss-vscode-api=0.0.0
+--macro Sys.println("haxe_libraries/kiss-vscode-api.hxml:6: [Warning] Using dev version of library kiss-vscode-api")

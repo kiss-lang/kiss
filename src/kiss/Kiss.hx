@@ -613,9 +613,11 @@ class Kiss {
 
         var rebuildMTime = Math.NEGATIVE_INFINITY;
         for (path in pathsWhichTriggerRebuild) {
-            var fileMTime = sys.FileSystem.stat(path).mtime.getTime();
-            if (fileMTime > rebuildMTime) {
-                rebuildMTime = fileMTime;
+            if(sys.FileSystem.exists(path)){
+                var fileMTime = sys.FileSystem.stat(path).mtime.getTime();
+                if (fileMTime > rebuildMTime) {
+                    rebuildMTime = fileMTime;
+                }
             }
         }
 
