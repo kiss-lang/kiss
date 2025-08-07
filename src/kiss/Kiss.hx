@@ -165,6 +165,7 @@ class Kiss {
             ],
             identAliases: [
                 // These ones won't conflict with variables and might commonly be used with (apply)
+                "extractOpt" => Symbol("Prelude.extractOpt"),
                 "+" => Symbol("Prelude.add"),
                 "-" => Symbol("Prelude.subtract"),
                 "*" => Symbol("Prelude.multiply"),

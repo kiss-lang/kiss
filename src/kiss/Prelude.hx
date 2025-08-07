@@ -4,6 +4,7 @@ using Std;
 
 import kiss.ReaderExp;
 import haxe.ds.Either;
+import haxe.ds.Option;
 import haxe.Constraints;
 import haxe.DynamicAccess;
 #if js
@@ -73,6 +74,13 @@ class Prelude {
                 } else {
                     throw 'cannot use $d in multiplication';
                 };
+        };
+    }
+
+    public static function extractOpt<T>(opt:Option<T>) {
+        return switch (opt) {
+            case Some(v): v;
+            default: throw 'Failed to extract Option: $opt';
         };
     }
 
