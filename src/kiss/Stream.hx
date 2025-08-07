@@ -90,6 +90,14 @@ class Stream {
         return Some(content.substr(0, chars));
     }
 
+    // Peek until the end of the line or EOF
+    public function peekLine():Option<String> {
+        if(content.length == 0) return None;
+        var index = content.indexOf("\n");
+        if(index == -1) return Some(content);
+        return Some(content.substr(0, index));
+    }
+
     public function isEmpty() {
         return content.length == 0;
     }
