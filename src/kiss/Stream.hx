@@ -426,6 +426,34 @@ class Stream {
         };
     }
 
+    // As long as lines keep passing a predicate, keep adding them to a Stream, and return it
+    public function takeLinesAsStreamWhile(predicate:String->Bool):Option<Stream> {
+        var lineNo = this.line;
+        var column = this.column;
+        var absoluteChar = this.absoluteChar;
+
+        var newContent = "";
+        while (true){
+            switch (peekLine()){
+                case Some(line) if(predicate(line)):
+                    newContent += line + "\n";
+                    takeLine();
+                default:
+                    break;
+            }
+        }
+        if(newContent.length == 0) return None;
+        // Remove trailing newline
+        newContent = newContent.substr(0, newContent.length - 1);
+
+        var s = Stream.fromString(newContent);
+        s.line = lineNo;
+        s.column = column;
+        s.file = this.file;
+        s.absoluteChar = absoluteChar;
+        return Some(s);
+    }
+
     public function expect(whatToExpect:String="something unspecified", f:Void->Option<String>):String {
         var position = position();
         switch (f()) {
