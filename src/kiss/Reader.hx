@@ -178,7 +178,7 @@ class Reader {
         //     -+>countVar arg body
         //     -+>countVar {body}
         //     -+>countVar (body)
-        // or any of those with the first expression after -> or -+> prefixed by :Void
+        // or any of those with the first expression after -> or -+> prefixed by :Void or :Null
         function arrowSyntax(countingLambda:Bool, stream:Stream, k:HasReadTables) {
             var countVar = if (countingLambda) {
                 _assertRead(stream, k);
@@ -192,10 +192,14 @@ class Reader {
             var bodyExp:ReaderExp = null;
 
             var returnsValue = true;
+            var returnsNull = false;
             switch (firstExp.def) {
                 case TypedExp("Void", realFirstExp):
                     firstExp = realFirstExp;
                     returnsValue = false;
+                case TypedExp("Null", realFirstExp):
+                    firstExp = realFirstExp;
+                    returnsNull = true;
                 default:
             }
             switch (firstExp.def) {
@@ -209,10 +213,13 @@ class Reader {
                     argsExp = b.list([]);
                     bodyExp = firstExp;
                 default:
-                    throw KissError.fromExp(firstExp, "first expression after -> should be [args...], arg, (exp) or {body}, or one of those prefixed with :Void. When an argument type must be specified, even a single argument name must be put in brackets. For example: ->[:ArgType arg] <exp>");
+                    throw KissError.fromExp(firstExp, "first expression after -> should be [args...], arg, (exp) or {body}, or one of those prefixed with :Void or :Null. When an argument type must be specified, even a single argument name must be put in brackets. For example: ->[:ArgType arg] <exp>");
             }
             if (!returnsValue) {
                 argsExp = TypedExp("Void", argsExp).withPosOf(argsExp);
+            } else if(returnsNull) {
+                argsExp = TypedExp("Null", argsExp).withPosOf(argsExp);
+                bodyExp = b.begin([bodyExp, b.callSymbol("return", [b.symbol("null")])]);
             }
             return if (countingLambda) {
                 CallExp(b.symbol("countingLambda"), [countVar, argsExp, bodyExp]);

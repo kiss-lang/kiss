@@ -271,12 +271,15 @@ class SpecialForms {
             block;
         };
 
-        k.doc("lambda", 2, null, "(lambda [<argsNames...>] <body...>)");
+        k.doc("lambda", 2, null, "(lambda  <optional :Void or :Null> [<argsNames...>] <body...>)");
         map["lambda"] = (wholeExp:ReaderExp, args:Array<ReaderExp>, k:KissState) -> {
             var returnsValue = switch (args[0].def) {
                 case TypedExp("Void", argNames):
                     args[0] = argNames;
                     false;
+                case TypedExp("Null", argNames):
+                    args[0] = argNames;
+                    true;
                 default:
                     true;
             }
