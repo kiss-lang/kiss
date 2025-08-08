@@ -268,6 +268,17 @@ class Helpers {
             k.addVarInScope(v, true);
         }
 
+        // Functions declared :Null always return null as Dynamic, to help with annoying type unification situations
+        // when :Void can't be used
+        var retString = if (name != null) Helpers.explicitTypeString(name, k) else null;
+        var ret = if (name != null) Helpers.explicitType(name, k) else null;
+        if(retString == "Null"){
+            returnsValue = false;
+            ret = Helpers.parseComplexType("Dynamic");
+            var builder = (if (name != null) name else argList).expBuilder();
+            body.push(builder.callSymbol("return", [builder.symbol("null")]));
+        }
+
         var expr = if (body.length == 0) {
             EReturn(null).withMacroPosOf(if (name != null) name else argList);
         } else {
@@ -290,7 +301,7 @@ class Helpers {
         // But setting null arguments to default values is so common, and arguments are not settable references,
         // so function args are not immutable.
         return {
-            ret: if (name != null) Helpers.explicitType(name, k) else null,
+            ret: ret,
             args: args,
             expr: expr,
             params: params
