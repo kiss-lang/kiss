@@ -77,10 +77,12 @@ class Prelude {
         };
     }
 
-    public static function extractOpt<T>(opt:Option<T>) {
+    public static function extractOpt<T>(opt:Option<T>, ?def:T) {
         return switch (opt) {
             case Some(v): v;
-            default: throw 'Failed to extract Option: $opt';
+            default:
+                if(def != null) def;
+                else throw 'Failed to extract Option: $opt';
         };
     }
 
